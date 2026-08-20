@@ -1,0 +1,14 @@
+src/lib/board-image.ts
+  h_5ea1690a39f362 3-4,38-102,105-112,114-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d472d42ac8f88094e331950ab87a3a9253f6364b",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
