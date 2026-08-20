@@ -50,6 +50,7 @@ describe("page structure", () => {
     expect(src).toContain("pinInspect");
     expect(src).toContain("cameraInsets");
     expect(src).toContain("fitCamera");
+    expect(src).toContain("keepSelectionOnScreen");
   });
 
   test("Next.js loads the board script once after hydration", async () => {

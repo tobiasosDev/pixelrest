@@ -19,7 +19,9 @@ import {
   clampCamera,
   fitCamera,
   initialCamera,
+  minZoomFor,
   panCamera,
+  revealWorldRect,
   screenToCell,
   zoomCamera,
   type Camera,
@@ -104,9 +106,44 @@ function cameraInsets(): CameraInsets {
   const top = mark
     ? Math.round(mark.getBoundingClientRect().bottom) + 16
     : 48;
-  const bottom =
-    Math.round(dock?.getBoundingClientRect().height ?? 56) + 24;
-  return { top, right: side, bottom, left: side };
+  const dockH = Math.round(dock?.getBoundingClientRect().height ?? 56);
+  const ticketH = ticketEl.classList.contains("open")
+    ? ticketEl.offsetHeight
+    : 0;
+  return { top, right: side, bottom: dockH + ticketH + 24, left: side };
+}
+
+function keepSelectionOnScreen() {
+  const insets = cameraInsets();
+  if (!selection) {
+    applyCamera();
+    return;
+  }
+  const dockOnly = {
+    ...insets,
+    bottom: insets.bottom - (ticketEl.classList.contains("open") ? ticketEl.offsetHeight : 0),
+  };
+  const fitted =
+    camera.zoom <=
+    minZoomFor(view(), CANVAS_WIDTH, CANVAS_HEIGHT, dockOnly) + 0.002;
+  if (fitted) {
+    camera = fitCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, insets);
+  } else {
+    camera = revealWorldRect(
+      camera,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      {
+        x: selection.x * grid.cellSize,
+        y: selection.y * grid.cellSize,
+        width: selection.width * grid.cellSize,
+        height: selection.height * grid.cellSize,
+      },
+      insets,
+    );
+  }
+  applyCamera();
 }
 
 function applyCamera() {
@@ -270,6 +307,7 @@ function setSelection(rect: Rect | null) {
     quoteLineEl.textContent = "No squares selected";
     submitBtn.disabled = true;
     paint();
+    applyCamera();
     return;
   }
   liveQuote = quoteRegion(grid, selection);
@@ -278,6 +316,7 @@ function setSelection(rect: Rect | null) {
   ticketEl.classList.add("open");
   ticketEl.setAttribute("aria-hidden", "false");
   paint();
+  keepSelectionOnScreen();
 }
 
 function localPoint(event: PointerEvent): { x: number; y: number } {

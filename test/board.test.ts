@@ -20,6 +20,7 @@ import {
   fitCamera,
   initialCamera,
   panCamera,
+  revealWorldRect,
   zoomCamera,
 } from "../src/lib/camera";
 import { resolveLogoFromHtml } from "../src/lib/logo";
@@ -250,6 +251,28 @@ describe("camera pan and zoom", () => {
     expect(fitted.x).toBeGreaterThanOrEqual(insets.left - 0.01);
     expect(fitted.x + scaled).toBeLessThanOrEqual(
       viewport.width - insets.right + 0.01,
+    );
+  });
+
+  test("claim overlay inset keeps a bottom selection above the ticket", () => {
+    const viewport = { width: 1280, height: 800 };
+    const board = 3200;
+    const insets = { top: 48, right: 24, bottom: 400, left: 24 };
+    const camera = { x: 0, y: 0, zoom: 1 };
+    const world = { x: 0, y: 3100, width: 80, height: 100 };
+    const revealed = revealWorldRect(
+      camera,
+      viewport,
+      board,
+      board,
+      world,
+      insets,
+    );
+    const top = revealed.y + world.y * revealed.zoom;
+    const bottom = revealed.y + (world.y + world.height) * revealed.zoom;
+    expect(top).toBeGreaterThanOrEqual(insets.top - 0.01);
+    expect(bottom).toBeLessThanOrEqual(
+      viewport.height - insets.bottom + 0.01,
     );
   });
 });
