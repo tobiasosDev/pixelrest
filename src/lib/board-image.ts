@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { ImageResponse } from "next/og";
+import { createElement } from "react";
 import sharp from "sharp";
 import {
   DEFAULT_COLS,
@@ -33,21 +35,84 @@ export async function renderBoardImage(options: {
 }): Promise<Buffer> {
   const board = await paintBoard(options.grid, new Set(options.newClaimIds));
   const origin = boardOrigin();
-  const labels = await labelSvg(options.title, options.dateLabel, options.footer);
-  return sharp({
-    create: {
+  const font = await readFile(
+    join(process.cwd(), "src/lib/fonts/IBMPlexMono-Regular.ttf"),
+  );
+  const image = new ImageResponse(
+    createElement(
+      "div",
+      {
+        style: {
+          width: X_POST_WIDTH,
+          height: X_POST_HEIGHT,
+          display: "flex",
+          backgroundColor: "#0a0a0a",
+          color: "#eaeaea",
+          fontFamily: "Plex",
+          position: "relative",
+        },
+      },
+      createElement("img", {
+        src: `data:image/png;base64,${board.toString("base64")}`,
+        width: BOARD_PX,
+        height: BOARD_PX,
+        style: {
+          position: "absolute",
+          left: origin.x,
+          top: origin.y,
+        },
+      }),
+      createElement(
+        "div",
+        {
+          style: {
+            position: "absolute",
+            left: 24,
+            top: 16,
+            display: "flex",
+            flexDirection: "column",
+            fontSize: 14,
+            letterSpacing: 1,
+          },
+        },
+        createElement("div", null, options.title),
+        createElement(
+          "div",
+          { style: { marginTop: 8, color: "#8a8a8a", fontSize: 12 } },
+          options.dateLabel,
+        ),
+      ),
+      createElement(
+        "div",
+        {
+          style: {
+            position: "absolute",
+            bottom: 12,
+            left: 0,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            color: "#8a8a8a",
+            fontSize: 12,
+          },
+        },
+        options.footer,
+      ),
+    ),
+    {
       width: X_POST_WIDTH,
       height: X_POST_HEIGHT,
-      channels: 4,
-      background: { r: VOID.r, g: VOID.g, b: VOID.b, alpha: 1 },
+      fonts: [
+        {
+          name: "Plex",
+          data: font,
+          weight: 400,
+          style: "normal",
+        },
+      ],
     },
-  })
-    .composite([
-      { input: board, left: origin.x, top: origin.y },
-      { input: labels, left: 0, top: 0 },
-    ])
-    .png({ compressionLevel: 9 })
-    .toBuffer();
+  );
+  return Buffer.from(await image.arrayBuffer());
 }
 
 async function paintBoard(grid: GridState, newClaimIds: Set<string>): Promise<Buffer> {
@@ -200,37 +265,4 @@ function setPx(
   buf[i + 3] = color.a;
 }
 
-let fontCss: string | null = null;
 
-async function plexFace(): Promise<string> {
-  if (fontCss) {
-    return fontCss;
-  }
-  const bytes = await readFile(
-    join(process.cwd(), "src/lib/fonts/IBMPlexMono-Regular.ttf"),
-  );
-  fontCss = `@font-face{font-family:Plex;src:url('data:font/ttf;base64,${bytes.toString("base64")}') format('truetype');}`;
-  return fontCss;
-}
-
-async function labelSvg(
-  title: string,
-  dateLabel: string,
-  footer: string,
-): Promise<Buffer> {
-  const face = await plexFace();
-  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${X_POST_WIDTH}" height="${X_POST_HEIGHT}">
-  <defs><style type="text/css">${face}</style></defs>
-  <text x="24" y="32" fill="#eaeaea" font-family="Plex" font-size="14">${escapeXml(title)}</text>
-  <text x="24" y="52" fill="#8a8a8a" font-family="Plex" font-size="12">${escapeXml(dateLabel)}</text>
-  <text x="${X_POST_WIDTH / 2}" y="${X_POST_HEIGHT - 10}" text-anchor="middle" fill="#8a8a8a" font-family="Plex" font-size="12">${escapeXml(footer)}</text>
-</svg>`);
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
