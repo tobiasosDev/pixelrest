@@ -8,7 +8,8 @@ import {
   occupancyCount,
   saveDailyPost,
 } from "../../../../src/lib/grid-db";
-import { postImageTweet, readXCredentials } from "../../../../src/lib/x-post";
+import { resolveXCredentials } from "../../../../src/lib/x-auth";
+import { postImageTweet } from "../../../../src/lib/x-post";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -69,7 +70,8 @@ async function run(req: Request): Promise<Response> {
       },
     });
   }
-  if (!readXCredentials()) {
+  const credentials = await resolveXCredentials();
+  if (!credentials) {
     return Response.json(
       { error: "X API credentials are missing", dayKey: report.dayKey },
       { status: 503 },
@@ -78,6 +80,7 @@ async function run(req: Request): Promise<Response> {
   const posted = await postImageTweet({
     text: report.tweet,
     image,
+    credentials,
   });
   await saveDailyPost({
     dayKey: report.dayKey,
