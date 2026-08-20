@@ -1,0 +1,20 @@
+app/layout.tsx
+  h_5ea1690a39f362 22
+app/page.tsx
+  h_5ea1690a39f362 1,116
+src/client.ts
+  h_5ea1690a39f362 40-43
+test/structure.test.ts
+  h_5ea1690a39f362 57-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f411ed8988f7cae5f4320fee2fd15606775d044c",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
