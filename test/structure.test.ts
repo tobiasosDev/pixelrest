@@ -118,6 +118,14 @@ describe("same functions as the unit tests", () => {
     expect(classList).toContain("file-protocol");
   });
 
+  test("checkout accepts a promotion code and fulfills zero-total sessions", async () => {
+    const checkout = await read("app/api/checkout/route.ts");
+    const webhook = await read("app/api/webhook/route.ts");
+    expect(checkout).toContain("allow_promotion_codes: true");
+    expect(webhook).toContain("no_payment_required");
+    expect(webhook).toContain('payment_status !== "paid"');
+  });
+
   test("server claim path uses applyClaim, quoteRegion, and logo fetch from the website URL", async () => {
     const src = await read("src/server.ts");
     expect(src).toContain("applyClaim");

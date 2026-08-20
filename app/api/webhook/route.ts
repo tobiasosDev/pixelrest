@@ -33,7 +33,10 @@ export async function POST(req: Request) {
     metadata?: Record<string, string>;
     payment_intent?: string | null;
   };
-  if (session.payment_status === "unpaid") {
+  if (
+    session.payment_status !== "paid" &&
+    session.payment_status !== "no_payment_required"
+  ) {
     return Response.json({ received: true });
   }
   const meta = session.metadata ?? {};

@@ -62,6 +62,7 @@ export async function POST(req: Request) {
       mode: "payment",
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
+      allow_promotion_codes: true,
       line_items: [
         {
           quantity: quote.vacantCount,
