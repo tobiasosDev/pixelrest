@@ -17,6 +17,7 @@ import {
 import {
   createCamera,
   gridIsReachable,
+  fitCamera,
   initialCamera,
   panCamera,
   zoomCamera,
@@ -231,6 +232,25 @@ describe("camera pan and zoom", () => {
     expect(
       gridIsReachable(desktop, { width: 1280, height: 800 }, gridSize),
     ).toBe(true);
+  });
+
+  test("fit leaves empty padding so a wide short screen still shows the full square", () => {
+    const viewport = { width: 1920, height: 600 };
+    const insets = { top: 48, right: 24, bottom: 80, left: 24 };
+    const fitted = fitCamera(viewport, gridSize, gridSize, insets);
+    const scaled = gridSize * fitted.zoom;
+    expect(fitted.zoom).toBeLessThan(viewport.height / gridSize);
+    expect(scaled).toBeLessThanOrEqual(
+      viewport.height - insets.top - insets.bottom + 0.01,
+    );
+    expect(fitted.y).toBeGreaterThanOrEqual(insets.top - 0.01);
+    expect(fitted.y + scaled).toBeLessThanOrEqual(
+      viewport.height - insets.bottom + 0.01,
+    );
+    expect(fitted.x).toBeGreaterThanOrEqual(insets.left - 0.01);
+    expect(fitted.x + scaled).toBeLessThanOrEqual(
+      viewport.width - insets.right + 0.01,
+    );
   });
 });
 

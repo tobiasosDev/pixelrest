@@ -48,6 +48,8 @@ describe("page structure", () => {
     const src = await read("src/client.ts");
     expect(src).toContain("tapCellSelection");
     expect(src).toContain("pinInspect");
+    expect(src).toContain("cameraInsets");
+    expect(src).toContain("fitCamera");
   });
 
   test("Next.js loads the board script once after hydration", async () => {

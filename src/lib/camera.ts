@@ -9,6 +9,36 @@ export interface Viewport {
   height: number;
 }
 
+export interface CameraInsets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export const ZERO_INSETS: CameraInsets = {
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+};
+
+export function contentBox(
+  viewport: Viewport,
+  insets: CameraInsets = ZERO_INSETS,
+): { x: number; y: number; width: number; height: number } {
+  const left = Math.max(0, insets.left);
+  const right = Math.max(0, insets.right);
+  const top = Math.max(0, insets.top);
+  const bottom = Math.max(0, insets.bottom);
+  return {
+    x: left,
+    y: top,
+    width: Math.max(1, viewport.width - left - right),
+    height: Math.max(1, viewport.height - top - bottom),
+  };
+}
+
 export const MAX_ZOOM = 8;
 
 export function createCamera(): Camera {
@@ -19,14 +49,13 @@ export function minZoomFor(
   viewport: Viewport,
   boardWidth: number,
   boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
 ): number {
   if (boardWidth <= 0 || boardHeight <= 0) {
     return 1;
   }
-  const fit = Math.min(
-    viewport.width / boardWidth,
-    viewport.height / boardHeight,
-  );
+  const box = contentBox(viewport, insets);
+  const fit = Math.min(box.width / boardWidth, box.height / boardHeight);
   return Math.min(1, Math.max(0.02, fit));
 }
 
@@ -51,27 +80,29 @@ export function clampCamera(
   viewport: Viewport,
   boardWidth: number,
   boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
 ): Camera {
-  const minZoom = minZoomFor(viewport, boardWidth, boardHeight);
+  const minZoom = minZoomFor(viewport, boardWidth, boardHeight, insets);
   const zoom = Math.min(MAX_ZOOM, Math.max(minZoom, camera.zoom));
   const scaledW = boardWidth * zoom;
   const scaledH = boardHeight * zoom;
+  const box = contentBox(viewport, insets);
 
   let x = camera.x;
   let y = camera.y;
 
-  if (scaledW <= viewport.width) {
-    x = (viewport.width - scaledW) / 2;
+  if (scaledW <= box.width) {
+    x = box.x + (box.width - scaledW) / 2;
   } else {
-    const minX = viewport.width - scaledW;
-    x = Math.min(0, Math.max(minX, x));
+    const minX = box.x + box.width - scaledW;
+    x = Math.min(box.x, Math.max(minX, x));
   }
 
-  if (scaledH <= viewport.height) {
-    y = (viewport.height - scaledH) / 2;
+  if (scaledH <= box.height) {
+    y = box.y + (box.height - scaledH) / 2;
   } else {
-    const minY = viewport.height - scaledH;
-    y = Math.min(0, Math.max(minY, y));
+    const minY = box.y + box.height - scaledH;
+    y = Math.min(box.y, Math.max(minY, y));
   }
 
   return { x, y, zoom };
@@ -84,12 +115,14 @@ export function panCamera(
   viewport: Viewport,
   boardWidth: number,
   boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
 ): Camera {
   return clampCamera(
     { x: camera.x + dx, y: camera.y + dy, zoom: camera.zoom },
     viewport,
     boardWidth,
     boardHeight,
+    insets,
   );
 }
 
@@ -101,8 +134,9 @@ export function zoomCamera(
   viewport: Viewport,
   boardWidth: number,
   boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
 ): Camera {
-  const minZoom = minZoomFor(viewport, boardWidth, boardHeight);
+  const minZoom = minZoomFor(viewport, boardWidth, boardHeight, insets);
   const nextZoom = Math.min(
     MAX_ZOOM,
     Math.max(minZoom, camera.zoom * factor),
@@ -118,6 +152,23 @@ export function zoomCamera(
     viewport,
     boardWidth,
     boardHeight,
+    insets,
+  );
+}
+
+export function fitCamera(
+  viewport: Viewport,
+  boardWidth: number,
+  boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
+): Camera {
+  const zoom = minZoomFor(viewport, boardWidth, boardHeight, insets);
+  return clampCamera(
+    { x: 0, y: 0, zoom },
+    viewport,
+    boardWidth,
+    boardHeight,
+    insets,
   );
 }
 
@@ -125,16 +176,18 @@ export function initialCamera(
   viewport: Viewport,
   boardWidth: number,
   boardHeight: number = boardWidth,
+  insets: CameraInsets = ZERO_INSETS,
 ): Camera {
   if (viewport.width < 720) {
-    return clampCamera(createCamera(), viewport, boardWidth, boardHeight);
+    return clampCamera(
+      createCamera(),
+      viewport,
+      boardWidth,
+      boardHeight,
+      insets,
+    );
   }
-  const fit = Math.min(
-    viewport.width / boardWidth,
-    viewport.height / boardHeight,
-    1,
-  );
-  return clampCamera({ x: 0, y: 0, zoom: fit }, viewport, boardWidth, boardHeight);
+  return fitCamera(viewport, boardWidth, boardHeight, insets);
 }
 
 export function screenToCell(

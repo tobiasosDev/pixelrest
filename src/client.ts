@@ -17,11 +17,13 @@ import {
 } from "./lib/board";
 import {
   clampCamera,
+  fitCamera,
   initialCamera,
   panCamera,
   screenToCell,
   zoomCamera,
   type Camera,
+  type CameraInsets,
   type Viewport,
 } from "./lib/camera";
 import { resolveLogoFromHtml } from "./lib/logo";
@@ -95,8 +97,26 @@ function view(): Viewport {
   };
 }
 
+function cameraInsets(): CameraInsets {
+  const dock = document.querySelector(".dock") as HTMLElement | null;
+  const mark = document.querySelector(".mark") as HTMLElement | null;
+  const side = 24;
+  const top = mark
+    ? Math.round(mark.getBoundingClientRect().bottom) + 16
+    : 48;
+  const bottom =
+    Math.round(dock?.getBoundingClientRect().height ?? 56) + 24;
+  return { top, right: side, bottom, left: side };
+}
+
 function applyCamera() {
-  camera = clampCamera(camera, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+  camera = clampCamera(
+    camera,
+    view(),
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    cameraInsets(),
+  );
   surfaceEl.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`;
   zoomEl.textContent = `${Math.round(camera.zoom * 100)}%`;
 }
@@ -410,14 +430,18 @@ function onPointerMove(event: PointerEvent) {
         mid.x,
         mid.y,
         view(),
-        CANVAS_WIDTH, CANVAS_HEIGHT,
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        cameraInsets(),
       );
       camera = panCamera(
         camera,
         mid.x - pinch.midX,
         mid.y - pinch.midY,
         view(),
-        CANVAS_WIDTH, CANVAS_HEIGHT,
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        cameraInsets(),
       );
       pinch = { ...pinch, midX: mid.x, midY: mid.y };
       applyCamera();
@@ -459,7 +483,15 @@ function onPointerMove(event: PointerEvent) {
   }
 
   if ((!claimMode || spacePan || dragIsTouch) && pointers.size === 1) {
-    camera = panCamera(camera, dx, dy, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+    camera = panCamera(
+      camera,
+      dx,
+      dy,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
     applyCamera();
   } else if (claimMode && cell && !spacePan && !dragIsTouch) {
     setSelection(rectFromPoints(dragOrigin.cellX, dragOrigin.cellY, cell.x, cell.y));
@@ -518,7 +550,9 @@ function onWheel(event: WheelEvent) {
     event.clientX - bounds.left,
     event.clientY - bounds.top,
     view(),
-    CANVAS_WIDTH, CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    cameraInsets(),
   );
   applyCamera();
 }
@@ -612,7 +646,9 @@ document.getElementById("zoom-in")?.addEventListener("click", () => {
     view().width / 2,
     view().height / 2,
     view(),
-    CANVAS_WIDTH, CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    cameraInsets(),
   );
   applyCamera();
 });
@@ -623,12 +659,14 @@ document.getElementById("zoom-out")?.addEventListener("click", () => {
     view().width / 2,
     view().height / 2,
     view(),
-    CANVAS_WIDTH, CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    cameraInsets(),
   );
   applyCamera();
 });
 document.getElementById("zoom-fit")?.addEventListener("click", () => {
-  camera = initialCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+  camera = fitCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets());
   applyCamera();
 });
 document.getElementById("ticket-close")?.addEventListener("click", () => {
@@ -659,19 +697,51 @@ window.addEventListener("keydown", (event) => {
   }
   const step = 48;
   if (event.key === "ArrowLeft") {
-    camera = panCamera(camera, step, 0, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+    camera = panCamera(
+      camera,
+      step,
+      0,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
     applyCamera();
   }
   if (event.key === "ArrowRight") {
-    camera = panCamera(camera, -step, 0, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+    camera = panCamera(
+      camera,
+      -step,
+      0,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
     applyCamera();
   }
   if (event.key === "ArrowUp") {
-    camera = panCamera(camera, 0, step, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+    camera = panCamera(
+      camera,
+      0,
+      step,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
     applyCamera();
   }
   if (event.key === "ArrowDown") {
-    camera = panCamera(camera, 0, -step, view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+    camera = panCamera(
+      camera,
+      0,
+      -step,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
     applyCamera();
   }
   if (event.key === "+" || event.key === "=") {
@@ -681,7 +751,9 @@ window.addEventListener("keydown", (event) => {
       view().width / 2,
       view().height / 2,
       view(),
-      CANVAS_WIDTH, CANVAS_HEIGHT,
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
     );
     applyCamera();
   }
@@ -692,7 +764,9 @@ window.addEventListener("keydown", (event) => {
       view().width / 2,
       view().height / 2,
       view(),
-      CANVAS_WIDTH, CANVAS_HEIGHT,
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
     );
     applyCamera();
   }
@@ -729,7 +803,7 @@ window.__lastResort = {
 };
 
 setClaimMode(false);
-camera = initialCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT);
+camera = initialCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets());
 applyCamera();
 paint();
 await loadGrid();
