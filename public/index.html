@@ -96,6 +96,13 @@
         document.documentElement.classList.add("file-protocol");
       }
     </script>
-    <script type="module" src="/app.js"></script>
+    <script>
+      if (location.protocol !== "file:") {
+        var board = document.createElement("script");
+        board.type = "module";
+        board.src = "/app.js?t=" + Date.now();
+        document.body.appendChild(board);
+      }
+    </script>
   </body>
 </html>

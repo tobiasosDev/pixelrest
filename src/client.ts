@@ -612,7 +612,9 @@ async function loadGrid() {
     paint();
     return;
   }
-  const response = await fetch("/api/grid");
+  const response = await fetch(`/api/grid?t=${Date.now()}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     setStatus("Could not load the board.");
     return;

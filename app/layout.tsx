@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+export const dynamic = "force-dynamic";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -13,6 +15,8 @@ export const metadata: Metadata = {
     "A square board of 102,400 squares at $10 each. Over a million dollars if it fills.",
 };
 
+const cssHref = `/styles.css?v=${process.env.NEXT_PUBLIC_BUILD_ID ?? "4"}`;
+
 export default function RootLayout({
   children,
 }: {
@@ -21,7 +25,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="stylesheet" href="/styles.css" />
+        <meta
+          httpEquiv="Cache-Control"
+          content="no-cache, no-store, must-revalidate"
+        />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <link rel="stylesheet" href={cssHref} />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>

@@ -65,6 +65,31 @@ describe("page structure", () => {
     expect(layout).not.toContain('src="/app.js"');
   });
 
+  test("mobile cannot keep a cached board script or HTML shell", async () => {
+    const loader = await read("app/board-loader.tsx");
+    const config = await read("next.config.mjs");
+    const vercel = await read("vercel.json");
+    const middleware = await read("middleware.ts");
+    const grid = await read("app/api/grid/route.ts");
+    const client = await read("src/client.ts");
+    const layout = await read("app/layout.tsx");
+    expect(loader).toContain('cache: "no-store"');
+    expect(loader).toContain("Date.now()");
+    expect(loader).toContain("createObjectURL");
+    expect(loader).toContain("pageshow");
+    expect(config).toContain("/app.js");
+    expect(config).toContain("CDN-Cache-Control");
+    expect(config).toContain("no-store");
+    expect(vercel).toContain("/app.js");
+    expect(vercel).toContain("Vercel-CDN-Cache-Control");
+    expect(middleware).toContain("/app.js");
+    expect(middleware).toContain("no-store");
+    expect(grid).toContain("no-store");
+    expect(client).toContain('cache: "no-store"');
+    expect(layout).toContain("no-store");
+    expect(layout).toContain("no-cache");
+  });
+
   test("file: protocol explains how to serve instead of failing silently", async () => {
     const html = await read("public/index.html");
     expect(html).toContain('location.protocol === "file:"');
