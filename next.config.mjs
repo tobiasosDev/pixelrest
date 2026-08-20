@@ -9,6 +9,16 @@ const NO_STORE = [
   { key: "Expires", value: "0" },
 ];
 
+// app.js and styles.css are referenced with ?v=BUILD_ID, so their URLs change
+// on every deploy and the files can be cached forever. In dev the files change
+// without the URL changing, so caching stays off there.
+const IMMUTABLE = [
+  { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+];
+
+const staticAssetHeaders =
+  process.env.NODE_ENV === "production" ? IMMUTABLE : NO_STORE;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -22,9 +32,9 @@ const nextConfig = {
   async headers() {
     return [
       { source: "/", headers: NO_STORE },
-      { source: "/app.js", headers: NO_STORE },
-      { source: "/styles.css", headers: NO_STORE },
       { source: "/api/grid", headers: NO_STORE },
+      { source: "/app.js", headers: staticAssetHeaders },
+      { source: "/styles.css", headers: staticAssetHeaders },
     ];
   },
 };

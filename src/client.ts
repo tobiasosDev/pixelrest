@@ -33,6 +33,12 @@ import { isVisitorId, rankHolders, type Holder } from "./lib/hud";
 import { resolveLogoFromHtml } from "./lib/logo";
 import { placeholderDataUrl } from "./lib/placeholder";
 
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+
 const LONG_PRESS_MS = 500;
 const MOVE_THRESHOLD = 8;
 const VISITOR_KEY = "pixelrest-visitor";

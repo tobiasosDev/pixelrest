@@ -1,4 +1,4 @@
-import { BoardLoader } from "./board-loader";
+import { BoardScript } from "./board-script";
 import { emptySnapshot, loadSnapshot } from "../src/lib/grid-db";
 
 export const dynamic = "force-dynamic";
@@ -140,7 +140,7 @@ export default async function Page() {
           __html: `window.__PIXELREST_GRID__=${payload};`,
         }}
       />
-      <BoardLoader />
+      <BoardScript />
     </>
   );
 }

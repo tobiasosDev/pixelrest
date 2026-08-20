@@ -61,14 +61,22 @@ describe("page structure", () => {
     expect(src).toContain("claimRectFromAnchor");
   });
 
-  test("Next.js loads the board script once after hydration", async () => {
+  test("board script is preloaded in parallel and executed after hydration", async () => {
     const page = await read("app/page.tsx");
     const layout = await read("app/layout.tsx");
+    const boardScript = await read("app/board-script.tsx");
+    const assetUrls = await read("app/asset-urls.ts");
     expect(page).toContain("__PIXELREST_GRID__");
-    expect(page).toContain("BoardLoader");
+    expect(page).toContain("BoardScript");
     expect(page).toContain('id="hud"');
     expect(page).toContain('id="hud-holders"');
-    expect(layout).not.toContain('src="/app.js"');
+    expect(layout).toContain("modulepreload");
+    expect(assetUrls).toContain("/app.js?v=");
+    expect(assetUrls).toContain("/styles.css?v=");
+    expect(boardScript).toContain("data-pixelrest-board");
+    expect(boardScript).toContain("useEffect");
+    expect(boardScript).not.toContain("Date.now()");
+    expect(boardScript).not.toContain("no-store");
   });
 
   test("presence endpoint heartbeats anonymous viewers and returns holders", async () => {
@@ -84,29 +92,23 @@ describe("page structure", () => {
     expect(css).toMatch(/#hud\s*\{[\s\S]*position:\s*fixed/);
   });
 
-  test("mobile cannot keep a cached board script or HTML shell", async () => {
-    const loader = await read("app/board-loader.tsx");
+  test("mobile cannot keep a stale board: HTML is no-store, assets are versioned", async () => {
     const config = await read("next.config.mjs");
     const vercel = await read("vercel.json");
     const middleware = await read("middleware.ts");
     const grid = await read("app/api/grid/route.ts");
     const client = await read("src/client.ts");
-    const layout = await read("app/layout.tsx");
-    expect(loader).toContain('cache: "no-store"');
-    expect(loader).toContain("Date.now()");
-    expect(loader).toContain("createObjectURL");
-    expect(loader).toContain("pageshow");
-    expect(config).toContain("/app.js");
+    expect(config).toContain('{ source: "/", headers: NO_STORE }');
     expect(config).toContain("CDN-Cache-Control");
-    expect(config).toContain("no-store");
-    expect(vercel).toContain("/app.js");
-    expect(vercel).toContain("Vercel-CDN-Cache-Control");
-    expect(middleware).toContain("/app.js");
+    expect(config).toContain("immutable");
+    expect(vercel).toContain("no-store");
+    expect(vercel).toContain("immutable");
+    expect(middleware).toContain('"/"');
     expect(middleware).toContain("no-store");
+    expect(middleware).not.toContain("/app.js");
     expect(grid).toContain("no-store");
-    expect(client).toContain('cache: "no-store"');
-    expect(layout).toContain("no-store");
-    expect(layout).toContain("no-cache");
+    expect(client).toContain("pageshow");
+    expect(client).toContain("persisted");
   });
 
   test("file: protocol explains how to serve instead of failing silently", async () => {

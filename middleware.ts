@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const NO_STORE_PATHS = new Set([
-  "/",
-  "/app.js",
-  "/styles.css",
-  "/api/grid",
-  "/api/presence",
-]);
+// Only dynamic content stays no-store. app.js and styles.css use ?v=BUILD_ID
+// versioned URLs and get long-lived caching from next.config / vercel.json.
+const NO_STORE_PATHS = new Set(["/", "/api/grid", "/api/presence"]);
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -26,5 +22,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/app.js", "/styles.css", "/api/grid", "/api/presence"],
+  matcher: ["/", "/api/grid", "/api/presence"],
 };
