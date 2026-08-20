@@ -1,0 +1,39 @@
+vercel.json
+  s_7d3c1ca1c43b0c::t_057f8a927db100 5,25-26,34-35
+app/board-script.tsx
+  s_7d3c1ca1c43b0c::t_4887b56a232a11 1-3,5-22
+  s_7d3c1ca1c43b0c::t_a0545cbbd9a35b 4
+app/page.tsx
+  s_7d3c1ca1c43b0c::t_9726acc4896b65 143
+  s_7d3c1ca1c43b0c::t_413185e757265c 1
+app/layout.tsx
+  s_7d3c1ca1c43b0c::t_8abde421064b03 28
+  s_7d3c1ca1c43b0c::t_56000719d2784c 3
+src/client.ts
+  s_7d3c1ca1c43b0c::t_f85b39a5cf64ae 36-41
+middleware.ts
+  s_7d3c1ca1c43b0c::t_744714f8b56d2b 4-6,25
+test/structure.test.ts
+  s_7d3c1ca1c43b0c::t_a3b4a3fc0c669a 95,101,103-106,108,110-111
+  s_7d3c1ca1c43b0c::t_42de3dc966140f 64,67-68,70,73-79
+app/asset-urls.ts
+  s_7d3c1ca1c43b0c::t_67b6fcf015ea46 1-4
+next.config.mjs
+  s_7d3c1ca1c43b0c::t_548d3bcb534cd6 12-21,36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "19c99158260ca1dfea144e48829b36213101ddb0",
+  "prompts": {},
+  "sessions": {
+    "s_7d3c1ca1c43b0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9ffaf98a-ecf8-440d-938f-2488d80f058b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
