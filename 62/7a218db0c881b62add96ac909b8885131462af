@@ -1,0 +1,39 @@
+src/client.ts
+  s_ff1f6f4fc05e6e::t_8b3e9490096176 400,409,419-428,431
+  s_ff1f6f4fc05e6e::t_b707e1ab2736fd 525-529
+  s_ff1f6f4fc05e6e::t_7aec3fa1ab3fc8 122-123
+  s_ff1f6f4fc05e6e::t_e64bd01e6c7bf5 682-688,690-691,695-697,703-710,712,732-739,741
+  s_ff1f6f4fc05e6e::t_aacc3d6ad4ffd5 853-854,857-858,861-864
+  s_ff1f6f4fc05e6e::t_e0d47667b8f275 725-731
+  s_ff1f6f4fc05e6e::t_30fdff00c565a1 332,340,342,350
+  s_ff1f6f4fc05e6e::t_60028d9211967b 530-532,541-545,551-559
+  s_ff1f6f4fc05e6e::t_94b2cf41f17c44 978
+  s_ff1f6f4fc05e6e::t_80430f7ffaf3f0 650-655,670
+  s_ff1f6f4fc05e6e::t_eecdf19c36b342 104-107,109-111
+  s_ff1f6f4fc05e6e::t_4347e999342b8d 689
+  s_ff1f6f4fc05e6e::t_a4a20cd3d3382a 749-751,753-754
+  s_ff1f6f4fc05e6e::t_843384b98d1ea0 87-95
+  s_ff1f6f4fc05e6e::t_bed6f61d4f908b 183-265
+  s_ff1f6f4fc05e6e::t_ce79f2e3eaf16d 592-593,610
+  s_ff1f6f4fc05e6e::t_cb16524ee6ed22 1014-1019
+  s_ff1f6f4fc05e6e::t_d1d05bf4c49bd5 560
+public/styles.css
+  s_ff1f6f4fc05e6e::t_8d92f5c2be9edc 92,94-97
+  s_ff1f6f4fc05e6e::t_4abf5c831817a0 115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "627a218db0c881b62add96ac909b8885131462af",
+  "prompts": {},
+  "sessions": {
+    "s_ff1f6f4fc05e6e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0ec0c1db-573d-48fd-9733-c301df67414f",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
