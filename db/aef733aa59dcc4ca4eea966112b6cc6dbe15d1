@@ -1,0 +1,25 @@
+app/api/cron/daily/route.ts
+  s_245381c78d1476::t_791f3b812728f7 11-12,73-74,83
+app/api/x/connect/route.ts
+  s_245381c78d1476::t_20f338db5f3d37 1-20
+src/lib/x-auth.ts
+  s_245381c78d1476::t_de995ad6a9dad3 1-161
+supabase/migrations/20260820190000_x_auth.sql
+  s_245381c78d1476::t_64537f9c524e5d 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "dbaef733aa59dcc4ca4eea966112b6cc6dbe15d1",
+  "prompts": {},
+  "sessions": {
+    "s_245381c78d1476": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bddba557-5d15-4ad3-b6e8-9fe4a23a195d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
