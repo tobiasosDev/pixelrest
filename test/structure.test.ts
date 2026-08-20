@@ -53,6 +53,8 @@ describe("page structure", () => {
     expect(src).toContain("cameraInsets");
     expect(src).toContain("fitCamera");
     expect(src).toContain("keepSelectionOnScreen");
+    expect(src).toContain("fitToScreen");
+    expect(src).toContain("claimRectFromAnchor");
   });
 
   test("Next.js loads the board script once after hydration", async () => {

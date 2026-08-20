@@ -8,6 +8,7 @@ import {
   quoteRegion,
   rectFromPoints,
   tapCellSelection,
+  claimRectFromAnchor,
   VACANT_PRICE,
   BOARD_SQUARES,
   BOARD_VALUE,
@@ -93,6 +94,27 @@ describe("pricing", () => {
     expect(quote.vacantCount).toBe(BOARD_SQUARES);
     expect(quote.total).toBe(BOARD_VALUE);
     expect(quote.claimable).toBe(true);
+  });
+
+  test("a start cell and an end cell fill the rectangle between them", () => {
+    expect(claimRectFromAnchor(null, 4, 7)).toEqual({
+      x: 4,
+      y: 7,
+      width: 1,
+      height: 1,
+    });
+    expect(claimRectFromAnchor({ x: 2, y: 3 }, 5, 6)).toEqual({
+      x: 2,
+      y: 3,
+      width: 4,
+      height: 4,
+    });
+    expect(claimRectFromAnchor({ x: 5, y: 6 }, 2, 3)).toEqual({
+      x: 2,
+      y: 3,
+      width: 4,
+      height: 4,
+    });
   });
 
   test("tapping neighboring squares grows a connected rectangle and rejects a jump", () => {

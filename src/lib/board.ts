@@ -84,6 +84,17 @@ export function rectFromPoints(
   };
 }
 
+export function claimRectFromAnchor(
+  anchor: { x: number; y: number } | null,
+  cellX: number,
+  cellY: number,
+): Rect {
+  if (!anchor) {
+    return { x: cellX, y: cellY, width: 1, height: 1 };
+  }
+  return rectFromPoints(anchor.x, anchor.y, cellX, cellY);
+}
+
 export function cellInRect(rect: Rect, x: number, y: number): boolean {
   return (
     x >= rect.x &&

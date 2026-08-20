@@ -2,7 +2,7 @@ import {
   applyClaim,
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
-  cellInRect,
+  claimRectFromAnchor,
   clipRect,
   getCell,
   gridFromOccupied,
@@ -17,8 +17,8 @@ import {
 } from "./lib/board";
 import {
   clampCamera,
+  createCamera,
   fitCamera,
-  initialCamera,
   minZoomFor,
   panCamera,
   revealWorldRect,
@@ -67,14 +67,11 @@ if (!ctx) {
 }
 
 let grid: GridState = gridFromOccupied({ occupied: [] });
-let camera: Camera = initialCamera(
-  { width: 800, height: 600 },
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-);
+let camera: Camera = createCamera();
 let claimRegions: ReturnType<typeof groupClaims> | null = null;
 let claimMode = false;
 let selection: Rect | null = null;
+let claimAnchor: { x: number; y: number } | null = null;
 let liveQuote: Quote | null = null;
 let spacePan = false;
 let inspectPinned = false;
@@ -155,6 +152,18 @@ function applyCamera() {
   );
   surfaceEl.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`;
   zoomEl.textContent = `${Math.round(camera.zoom * 100)}%`;
+}
+
+function fitToScreen() {
+  camera = fitCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets());
+  applyCamera();
+}
+
+function isFitted(): boolean {
+  return (
+    camera.zoom <=
+    minZoomFor(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets()) + 0.002
+  );
 }
 
 function syncCanvasSize() {
@@ -301,6 +310,7 @@ function setSelection(rect: Rect | null) {
     : null;
   if (!selection) {
     liveQuote = null;
+    claimAnchor = null;
     ticketEl.classList.remove("open");
     ticketEl.setAttribute("aria-hidden", "true");
     quoteLineEl.textContent = "No squares selected";
@@ -531,8 +541,11 @@ function onPointerMove(event: PointerEvent) {
     );
     applyCamera();
   } else if (claimMode && cell && !spacePan && moved) {
+    if (!claimAnchor) {
+      claimAnchor = { x: dragOrigin.cellX, y: dragOrigin.cellY };
+    }
     setSelection(
-      rectFromPoints(dragOrigin.cellX, dragOrigin.cellY, cell.x, cell.y),
+      claimRectFromAnchor(claimAnchor, cell.x, cell.y),
     );
   }
 
@@ -550,16 +563,10 @@ function onPointerUp(event: PointerEvent) {
     const cell = cellFromEvent(event);
     if (cell && !moved && !longPressFired && !spacePan) {
       if (claimMode) {
-        const previous = selection;
-        const next = tapCellSelection(previous, cell.x, cell.y);
-        setSelection(next);
-        if (
-          previous &&
-          next === previous &&
-          !cellInRect(previous, cell.x, cell.y)
-        ) {
-          setStatus("Neighboring squares only.");
+        if (!claimAnchor) {
+          claimAnchor = { x: cell.x, y: cell.y };
         }
+        setSelection(claimRectFromAnchor(claimAnchor, cell.x, cell.y));
       } else {
         const occupant = getCell(grid, cell.x, cell.y);
         if (occupant) {
@@ -819,7 +826,16 @@ window.addEventListener("keyup", (event) => {
   }
 });
 
-window.addEventListener("resize", () => applyCamera());
+function onViewportChange() {
+  if (isFitted()) {
+    fitToScreen();
+    return;
+  }
+  applyCamera();
+}
+
+window.addEventListener("resize", onViewportChange);
+window.visualViewport?.addEventListener("resize", onViewportChange);
 
 window.__lastResort = {
   quoteRegion,
@@ -842,11 +858,23 @@ window.__lastResort = {
 };
 
 setClaimMode(false);
-camera = initialCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets());
-applyCamera();
+fitToScreen();
 paint();
 await loadGrid();
-applyCamera();
+fitToScreen();
+requestAnimationFrame(() => {
+  fitToScreen();
+  requestAnimationFrame(fitToScreen);
+});
+viewportEl.addEventListener(
+  "touchmove",
+  (event) => {
+    if (claimMode && event.touches.length === 1) {
+      event.preventDefault();
+    }
+  },
+  { passive: false },
+);
 
 declare global {
   interface Window {
