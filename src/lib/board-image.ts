@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import sharp from "sharp";
 import {
   DEFAULT_COLS,
@@ -31,7 +33,7 @@ export async function renderBoardImage(options: {
 }): Promise<Buffer> {
   const board = await paintBoard(options.grid, new Set(options.newClaimIds));
   const origin = boardOrigin();
-  const labels = labelSvg(options.title, options.dateLabel, options.footer);
+  const labels = await labelSvg(options.title, options.dateLabel, options.footer);
   return sharp({
     create: {
       width: X_POST_WIDTH,
@@ -198,11 +200,30 @@ function setPx(
   buf[i + 3] = color.a;
 }
 
-function labelSvg(title: string, dateLabel: string, footer: string): Buffer {
+let fontCss: string | null = null;
+
+async function plexFace(): Promise<string> {
+  if (fontCss) {
+    return fontCss;
+  }
+  const bytes = await readFile(
+    join(process.cwd(), "src/lib/fonts/IBMPlexMono-Regular.ttf"),
+  );
+  fontCss = `@font-face{font-family:Plex;src:url('data:font/ttf;base64,${bytes.toString("base64")}') format('truetype');}`;
+  return fontCss;
+}
+
+async function labelSvg(
+  title: string,
+  dateLabel: string,
+  footer: string,
+): Promise<Buffer> {
+  const face = await plexFace();
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${X_POST_WIDTH}" height="${X_POST_HEIGHT}">
-  <text x="24" y="32" fill="#eaeaea" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">${escapeXml(title)}</text>
-  <text x="24" y="52" fill="#8a8a8a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">${escapeXml(dateLabel)}</text>
-  <text x="${X_POST_WIDTH / 2}" y="${X_POST_HEIGHT - 10}" text-anchor="middle" fill="#8a8a8a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">${escapeXml(footer)}</text>
+  <defs><style type="text/css">${face}</style></defs>
+  <text x="24" y="32" fill="#eaeaea" font-family="Plex" font-size="14">${escapeXml(title)}</text>
+  <text x="24" y="52" fill="#8a8a8a" font-family="Plex" font-size="12">${escapeXml(dateLabel)}</text>
+  <text x="${X_POST_WIDTH / 2}" y="${X_POST_HEIGHT - 10}" text-anchor="middle" fill="#8a8a8a" font-family="Plex" font-size="12">${escapeXml(footer)}</text>
 </svg>`);
 }
 
