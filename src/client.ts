@@ -84,9 +84,15 @@ let lastPoint: { x: number; y: number } | null = null;
 let moved = false;
 let longPressTimer: number | null = null;
 let longPressFired = false;
-let pinch:
-  | { distance: number; zoom: number; midX: number; midY: number }
-  | null = null;
+let pinch: { distance: number; midX: number; midY: number } | null = null;
+let pinched = false;
+let userInteracted = false;
+let insetsCache: CameraInsets | null = null;
+let velocity = { x: 0, y: 0 };
+let lastMoveTime = 0;
+let glideFrame: number | null = null;
+let zoomFrame: number | null = null;
+let lastTap: { time: number; x: number; y: number } | null = null;
 
 function view(): Viewport {
   return {
@@ -95,7 +101,14 @@ function view(): Viewport {
   };
 }
 
+function invalidateInsets() {
+  insetsCache = null;
+}
+
 function cameraInsets(): CameraInsets {
+  if (insetsCache) {
+    return insetsCache;
+  }
   const dock = document.querySelector(".dock") as HTMLElement | null;
   const mark = document.querySelector(".mark") as HTMLElement | null;
   const side = 24;
@@ -106,7 +119,8 @@ function cameraInsets(): CameraInsets {
   const ticketH = ticketEl.classList.contains("open")
     ? ticketEl.offsetHeight
     : 0;
-  return { top, right: side, bottom: dockH + ticketH + 24, left: side };
+  insetsCache = { top, right: side, bottom: dockH + ticketH + 24, left: side };
+  return insetsCache;
 }
 
 function keepSelectionOnScreen() {
@@ -164,6 +178,89 @@ function isFitted(): boolean {
     camera.zoom <=
     minZoomFor(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets()) + 0.002
   );
+}
+
+function stopGlide() {
+  if (glideFrame !== null) {
+    cancelAnimationFrame(glideFrame);
+    glideFrame = null;
+  }
+}
+
+function startGlide() {
+  const speed = Math.hypot(velocity.x, velocity.y);
+  if (speed < 0.08) {
+    return;
+  }
+  const max = 1.6;
+  let vx = speed > max ? (velocity.x * max) / speed : velocity.x;
+  let vy = speed > max ? (velocity.y * max) / speed : velocity.y;
+  let last = performance.now();
+  const step = (now: number) => {
+    const dt = Math.min(64, now - last);
+    last = now;
+    const decay = Math.exp(-dt / 260);
+    vx *= decay;
+    vy *= decay;
+    if (Math.hypot(vx, vy) < 0.02) {
+      glideFrame = null;
+      return;
+    }
+    const before = camera;
+    camera = panCamera(
+      camera,
+      vx * dt,
+      vy * dt,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
+    applyCamera();
+    if (camera.x === before.x && camera.y === before.y) {
+      glideFrame = null;
+      return;
+    }
+    glideFrame = requestAnimationFrame(step);
+  };
+  glideFrame = requestAnimationFrame(step);
+}
+
+function stopZoomAnim() {
+  if (zoomFrame !== null) {
+    cancelAnimationFrame(zoomFrame);
+    zoomFrame = null;
+  }
+}
+
+function animateZoom(
+  targetFactor: number,
+  pivotX: number,
+  pivotY: number,
+  duration = 180,
+) {
+  stopZoomAnim();
+  stopGlide();
+  const startZoom = camera.zoom;
+  const start = performance.now();
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / duration);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const desired = startZoom * Math.pow(targetFactor, ease);
+    camera = zoomCamera(
+      camera,
+      desired / camera.zoom,
+      pivotX,
+      pivotY,
+      view(),
+      CANVAS_WIDTH,
+      CANVAS_HEIGHT,
+      cameraInsets(),
+    );
+    applyCamera();
+    zoomFrame = t < 1 ? requestAnimationFrame(step) : null;
+  };
+  zoomFrame = requestAnimationFrame(step);
 }
 
 function syncCanvasSize() {
@@ -232,29 +329,25 @@ function paint() {
 
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 1;
+  ctx.beginPath();
   for (let i = 0; i <= cols; i++) {
     const p = i * cellSize + 0.5;
-    ctx.beginPath();
     ctx.moveTo(p, 0);
     ctx.lineTo(p, size);
-    ctx.stroke();
-    ctx.beginPath();
     ctx.moveTo(0, p);
     ctx.lineTo(size, p);
-    ctx.stroke();
   }
+  ctx.stroke();
   ctx.strokeStyle = LINE_STRONG;
+  ctx.beginPath();
   for (let i = 0; i <= cols; i += 10) {
     const p = i * cellSize + 0.5;
-    ctx.beginPath();
     ctx.moveTo(p, 0);
     ctx.lineTo(p, size);
-    ctx.stroke();
-    ctx.beginPath();
     ctx.moveTo(0, p);
     ctx.lineTo(size, p);
-    ctx.stroke();
   }
+  ctx.stroke();
 
   if (!claimRegions) {
     claimRegions = groupClaims(grid);
@@ -304,7 +397,7 @@ function formatQuote(quote: Quote): string {
   return `${quote.vacantCount} squares · $${quote.total}`;
 }
 
-function setSelection(rect: Rect | null) {
+function setSelection(rect: Rect | null, commit = true) {
   selection = rect
     ? clipRect(rect, grid.cols, grid.rows)
     : null;
@@ -313,6 +406,7 @@ function setSelection(rect: Rect | null) {
     claimAnchor = null;
     ticketEl.classList.remove("open");
     ticketEl.setAttribute("aria-hidden", "true");
+    invalidateInsets();
     quoteLineEl.textContent = "No squares selected";
     submitBtn.disabled = true;
     paint();
@@ -322,9 +416,19 @@ function setSelection(rect: Rect | null) {
   liveQuote = quoteRegion(grid, selection);
   quoteLineEl.textContent = formatQuote(liveQuote);
   submitBtn.disabled = !liveQuote.claimable;
+  paint();
+  if (commit) {
+    commitSelection();
+  }
+}
+
+function commitSelection() {
+  if (!selection) {
+    return;
+  }
   ticketEl.classList.add("open");
   ticketEl.setAttribute("aria-hidden", "false");
-  paint();
+  invalidateInsets();
   keepSelectionOnScreen();
 }
 
@@ -418,27 +522,41 @@ function pinchMid(): { x: number; y: number } | null {
 }
 
 function onPointerDown(event: PointerEvent) {
-  viewportEl.setPointerCapture(event.pointerId);
+  try {
+    viewportEl.setPointerCapture(event.pointerId);
+  } catch {
+    // The pointer may already be gone (fast tap) — keep handling the event.
+  }
+  userInteracted = true;
+  stopGlide();
+  stopZoomAnim();
   const point = localPoint(event);
   pointers.set(event.pointerId, point);
-  moved = false;
-  longPressFired = false;
-  lastPoint = point;
-  const cell = cellFromEvent(event);
-  dragOrigin = cell
-    ? { x: point.x, y: point.y, cellX: cell.x, cellY: cell.y }
-    : { x: point.x, y: point.y, cellX: 0, cellY: 0 };
 
   if (pointers.size === 2) {
     clearLongPress();
     const distance = pinchDistance();
     const mid = pinchMid();
     if (distance && mid) {
-      pinch = { distance, zoom: camera.zoom, midX: mid.x, midY: mid.y };
+      pinch = { distance, midX: mid.x, midY: mid.y };
+      pinched = true;
+    }
+    if (claimMode && selection && !ticketEl.classList.contains("open")) {
+      setSelection(null);
     }
     viewportEl.classList.add("panning");
     return;
   }
+
+  moved = false;
+  longPressFired = false;
+  lastPoint = point;
+  lastMoveTime = event.timeStamp;
+  velocity = { x: 0, y: 0 };
+  const cell = cellFromEvent(event);
+  dragOrigin = cell
+    ? { x: point.x, y: point.y, cellX: cell.x, cellY: cell.y }
+    : { x: point.x, y: point.y, cellX: 0, cellY: 0 };
 
   const panNow = !claimMode || spacePan;
   viewportEl.classList.toggle("panning", panNow);
@@ -470,10 +588,9 @@ function onPointerMove(event: PointerEvent) {
     const distance = pinchDistance();
     const mid = pinchMid();
     if (distance && mid && pinch.distance > 0) {
-      const factor = distance / pinch.distance;
       camera = zoomCamera(
-        { ...camera, zoom: pinch.zoom },
-        factor,
+        camera,
+        distance / pinch.distance,
         mid.x,
         mid.y,
         view(),
@@ -490,7 +607,7 @@ function onPointerMove(event: PointerEvent) {
         CANVAS_HEIGHT,
         cameraInsets(),
       );
-      pinch = { ...pinch, midX: mid.x, midY: mid.y };
+      pinch = { distance, midX: mid.x, midY: mid.y };
       applyCamera();
     }
     return;
@@ -530,6 +647,12 @@ function onPointerMove(event: PointerEvent) {
   }
 
   if ((!claimMode || spacePan) && pointers.size === 1) {
+    const dt = Math.max(1, event.timeStamp - lastMoveTime);
+    velocity = {
+      x: 0.8 * (dx / dt) + 0.2 * velocity.x,
+      y: 0.8 * (dy / dt) + 0.2 * velocity.y,
+    };
+    lastMoveTime = event.timeStamp;
     camera = panCamera(
       camera,
       dx,
@@ -544,9 +667,7 @@ function onPointerMove(event: PointerEvent) {
     if (!claimAnchor) {
       claimAnchor = { x: dragOrigin.cellX, y: dragOrigin.cellY };
     }
-    setSelection(
-      claimRectFromAnchor(claimAnchor, cell.x, cell.y),
-    );
+    setSelection(claimRectFromAnchor(claimAnchor, cell.x, cell.y), false);
   }
 
   lastPoint = point;
@@ -558,16 +679,37 @@ function onPointerUp(event: PointerEvent) {
   if (pointers.size < 2) {
     pinch = null;
   }
+  if (pointers.size === 1) {
+    const [rest] = pointers.values();
+    lastPoint = { x: rest.x, y: rest.y };
+    dragOrigin = { x: rest.x, y: rest.y, cellX: 0, cellY: 0 };
+    lastMoveTime = event.timeStamp;
+    velocity = { x: 0, y: 0 };
+    moved = true;
+    pinched = false;
+    return;
+  }
   if (pointers.size === 0) {
     viewportEl.classList.remove("panning");
     const cell = cellFromEvent(event);
-    if (cell && !moved && !longPressFired && !spacePan) {
+    const point = localPoint(event);
+    const tapped = !moved && !longPressFired && !spacePan && !pinched;
+    if (cell && tapped) {
       if (claimMode) {
         if (!claimAnchor) {
           claimAnchor = { x: cell.x, y: cell.y };
         }
         setSelection(claimRectFromAnchor(claimAnchor, cell.x, cell.y));
+      } else if (
+        lastTap &&
+        event.timeStamp - lastTap.time < 350 &&
+        Math.hypot(point.x - lastTap.x, point.y - lastTap.y) < 40
+      ) {
+        hideTip();
+        animateZoom(2, point.x, point.y);
+        lastTap = null;
       } else {
+        lastTap = { time: event.timeStamp, x: point.x, y: point.y };
         const occupant = getCell(grid, cell.x, cell.y);
         if (occupant) {
           pinInspect(
@@ -580,7 +722,23 @@ function onPointerUp(event: PointerEvent) {
           hideTip();
         }
       }
+    } else if (
+      claimMode &&
+      selection &&
+      moved &&
+      !spacePan &&
+      !ticketEl.classList.contains("open")
+    ) {
+      commitSelection();
+    } else if (
+      moved &&
+      (!claimMode || spacePan) &&
+      !pinched &&
+      event.timeStamp - lastMoveTime < 100
+    ) {
+      startGlide();
     }
+    pinched = false;
     dragOrigin = null;
     lastPoint = null;
   }
@@ -588,8 +746,12 @@ function onPointerUp(event: PointerEvent) {
 
 function onWheel(event: WheelEvent) {
   event.preventDefault();
+  userInteracted = true;
+  stopGlide();
+  stopZoomAnim();
   const bounds = viewportEl.getBoundingClientRect();
-  const factor = event.deltaY > 0 ? 0.9 : 1.1;
+  const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+  const factor = Math.min(2, Math.max(0.5, Math.exp(-delta * 0.0022)));
   camera = zoomCamera(
     camera,
     factor,
@@ -688,34 +850,18 @@ formEl.addEventListener("submit", async (event) => {
 
 claimBtn.addEventListener("click", () => setClaimMode(!claimMode));
 document.getElementById("zoom-in")?.addEventListener("click", () => {
-  camera = zoomCamera(
-    camera,
-    1.2,
-    view().width / 2,
-    view().height / 2,
-    view(),
-    CANVAS_WIDTH,
-    CANVAS_HEIGHT,
-    cameraInsets(),
-  );
-  applyCamera();
+  userInteracted = true;
+  animateZoom(1.4, view().width / 2, view().height / 2);
 });
 document.getElementById("zoom-out")?.addEventListener("click", () => {
-  camera = zoomCamera(
-    camera,
-    0.8,
-    view().width / 2,
-    view().height / 2,
-    view(),
-    CANVAS_WIDTH,
-    CANVAS_HEIGHT,
-    cameraInsets(),
-  );
-  applyCamera();
+  userInteracted = true;
+  animateZoom(1 / 1.4, view().width / 2, view().height / 2);
 });
 document.getElementById("zoom-fit")?.addEventListener("click", () => {
-  camera = fitCamera(view(), CANVAS_WIDTH, CANVAS_HEIGHT, cameraInsets());
-  applyCamera();
+  userInteracted = true;
+  stopGlide();
+  stopZoomAnim();
+  fitToScreen();
 });
 document.getElementById("ticket-close")?.addEventListener("click", () => {
   setSelection(null);
@@ -829,6 +975,7 @@ window.addEventListener("keyup", (event) => {
 });
 
 function onViewportChange() {
+  invalidateInsets();
   if (isFitted()) {
     fitToScreen();
     return;
@@ -864,7 +1011,12 @@ paint();
 await loadGrid();
 fitToScreen();
 for (const ms of [0, 50, 150, 400, 1000]) {
-  window.setTimeout(fitToScreen, ms);
+  window.setTimeout(() => {
+    if (!userInteracted) {
+      invalidateInsets();
+      fitToScreen();
+    }
+  }, ms);
 }
 viewportEl.addEventListener(
   "touchmove",

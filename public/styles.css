@@ -89,7 +89,12 @@ body::after {
   height: 100%;
   overflow: hidden;
   touch-action: none;
+  overscroll-behavior: none;
   cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #viewport.claim-mode {
@@ -107,6 +112,7 @@ body::after {
   width: 3200px;
   height: 3200px;
   transform-origin: 0 0;
+  will-change: transform;
   background: var(--void);
   box-shadow: 0 0 0 1px var(--line);
 }
