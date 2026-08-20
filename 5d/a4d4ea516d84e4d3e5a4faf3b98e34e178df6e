@@ -1,0 +1,22 @@
+app/board-loader.tsx
+  h_5ea1690a39f362 1-18
+app/page.tsx
+  h_5ea1690a39f362 1,116
+next.config.mjs
+  h_5ea1690a39f362 4-7
+src/client.ts
+  h_5ea1690a39f362 864-866
+test/structure.test.ts
+  h_5ea1690a39f362 64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5da4d4ea516d84e4d3e5a4faf3b98e34e178df6e",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
