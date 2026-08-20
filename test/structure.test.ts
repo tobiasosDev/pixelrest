@@ -61,9 +61,7 @@ describe("page structure", () => {
     const page = await read("app/page.tsx");
     const layout = await read("app/layout.tsx");
     expect(page).toContain("__PIXELREST_GRID__");
-    expect(page).toContain("next/script");
-    expect(page).toContain('src="/app.js"');
-    expect(page).toContain('strategy="afterInteractive"');
+    expect(page).toContain("BoardLoader");
     expect(layout).not.toContain('src="/app.js"');
   });
 

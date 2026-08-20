@@ -1,4 +1,4 @@
-import Script from "next/script";
+import { BoardLoader } from "./board-loader";
 import { emptySnapshot, loadSnapshot } from "../src/lib/grid-db";
 
 export const dynamic = "force-dynamic";
@@ -113,7 +113,7 @@ export default async function Page() {
           __html: `window.__PIXELREST_GRID__=${payload};`,
         }}
       />
-      <Script src="/app.js" type="module" strategy="afterInteractive" />
+      <BoardLoader />
     </>
   );
 }

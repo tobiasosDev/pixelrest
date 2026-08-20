@@ -858,14 +858,12 @@ window.__lastResort = {
 };
 
 setClaimMode(false);
-fitToScreen();
 paint();
 await loadGrid();
 fitToScreen();
-requestAnimationFrame(() => {
-  fitToScreen();
-  requestAnimationFrame(fitToScreen);
-});
+for (const ms of [0, 50, 150, 400, 1000]) {
+  window.setTimeout(fitToScreen, ms);
+}
 viewportEl.addEventListener(
   "touchmove",
   (event) => {
