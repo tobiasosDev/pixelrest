@@ -37,7 +37,10 @@ const SELECT_FILL = "rgba(255,255,255,0.12)";
 
 const viewportEl = document.getElementById("viewport") as HTMLDivElement;
 const surfaceEl = document.getElementById("grid-surface") as HTMLDivElement;
-const canvas = document.getElementById("board") as HTMLCanvasElement;
+const canvas = document.getElementById("board") as HTMLCanvasElement | null;
+if (!canvas) {
+  throw new Error("Canvas is not available");
+}
 const tipEl = document.getElementById("tip") as HTMLDivElement;
 const ticketEl = document.getElementById("ticket") as HTMLElement;
 const formEl = document.getElementById("claim-form") as HTMLFormElement;
