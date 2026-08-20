@@ -13,6 +13,7 @@ import {
 import { snapshot, type GridSnapshot } from "./persist";
 import { fetchWebsiteLogo } from "../fetch-logo";
 import { supabaseAdmin } from "./supabase";
+import type { StoredClaim } from "./daily-report";
 
 export function emptySnapshot(): GridSnapshot {
   return snapshot(createGrid());
@@ -169,4 +170,82 @@ export async function fulfillPaidClaim(options: {
     .delete()
     .eq("stripe_session_id", options.stripeSessionId);
   return { ok: true };
+}
+
+export async function listClaims(): Promise<StoredClaim[]> {
+  const admin = supabaseAdmin();
+  const { data, error } = await admin
+    .from("claims")
+    .select("id,url,description,x,y,width,height,logo_url,created_at")
+    .order("created_at", { ascending: true });
+  if (error) {
+    throw error;
+  }
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    url: row.url as string,
+    description: row.description as string,
+    x: row.x as number,
+    y: row.y as number,
+    width: row.width as number,
+    height: row.height as number,
+    logoUrl: (row.logo_url as string | null) ?? null,
+    createdAt: row.created_at as string,
+  }));
+}
+
+export async function occupancyCount(): Promise<number> {
+  const admin = supabaseAdmin();
+  const { count, error } = await admin
+    .from("occupancy")
+    .select("*", { count: "exact", head: true });
+  if (error) {
+    throw error;
+  }
+  return count ?? 0;
+}
+
+export async function loadDailyPost(dayKey: string): Promise<{
+  tweetId: string | null;
+  body: string;
+} | null> {
+  const admin = supabaseAdmin();
+  const { data, error } = await admin
+    .from("daily_posts")
+    .select("tweet_id,body")
+    .eq("posted_on", dayKey)
+    .maybeSingle();
+  if (error) {
+    throw error;
+  }
+  if (!data) {
+    return null;
+  }
+  return {
+    tweetId: (data.tweet_id as string | null) ?? null,
+    body: data.body as string,
+  };
+}
+
+export async function saveDailyPost(options: {
+  dayKey: string;
+  tweetId: string | null;
+  body: string;
+  newClaimIds: string[];
+  occupiedCount: number;
+}): Promise<void> {
+  const admin = supabaseAdmin();
+  const { error } = await admin.from("daily_posts").upsert(
+    {
+      posted_on: options.dayKey,
+      tweet_id: options.tweetId,
+      body: options.body,
+      new_claim_ids: options.newClaimIds,
+      occupied_count: options.occupiedCount,
+    },
+    { onConflict: "posted_on" },
+  );
+  if (error) {
+    throw error;
+  }
 }

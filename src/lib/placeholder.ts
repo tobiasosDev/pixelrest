@@ -8,6 +8,48 @@ function hashHue(input: string): number {
   return hash % 360;
 }
 
+export function placeholderRgb(url: string): { r: number; g: number; b: number } {
+  return hslToRgb(hashHue(hostnameOf(url)), 0.28, 0.26);
+}
+
+function hslToRgb(
+  hue: number,
+  sat: number,
+  light: number,
+): { r: number; g: number; b: number } {
+  const chroma = (1 - Math.abs(2 * light - 1)) * sat;
+  const hp = hue / 60;
+  const x = chroma * (1 - Math.abs((hp % 2) - 1));
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (hp < 1) {
+    r = chroma;
+    g = x;
+  } else if (hp < 2) {
+    r = x;
+    g = chroma;
+  } else if (hp < 3) {
+    g = chroma;
+    b = x;
+  } else if (hp < 4) {
+    g = x;
+    b = chroma;
+  } else if (hp < 5) {
+    r = x;
+    b = chroma;
+  } else {
+    r = chroma;
+    b = x;
+  }
+  const match = light - chroma / 2;
+  return {
+    r: Math.round((r + match) * 255),
+    g: Math.round((g + match) * 255),
+    b: Math.round((b + match) * 255),
+  };
+}
+
 export function placeholderSvg(url: string): string {
   const host = hostnameOf(url);
   const letter = (host[0] ?? "?").toUpperCase();

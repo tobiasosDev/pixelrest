@@ -118,6 +118,17 @@ describe("same functions as the unit tests", () => {
     expect(classList).toContain("file-protocol");
   });
 
+  test("daily X cron is authorized and posts a 16:9 board image", async () => {
+    const cron = await read("app/api/cron/daily/route.ts");
+    const vercel = await read("vercel.json");
+    expect(cron).toContain("CRON_SECRET");
+    expect(cron).toContain("postImageTweet");
+    expect(cron).toContain("renderBoardImage");
+    expect(cron).toContain("buildDailyReport");
+    expect(vercel).toContain("/api/cron/daily");
+    expect(vercel).toContain("0 21 * * *");
+  });
+
   test("checkout accepts a promotion code and fulfills zero-total sessions", async () => {
     const checkout = await read("app/api/checkout/route.ts");
     const webhook = await read("app/api/webhook/route.ts");
