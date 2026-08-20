@@ -2,6 +2,7 @@ import { fulfillPaidClaim } from "../../../src/lib/grid-db";
 import { stripeClient } from "../../../src/lib/stripe";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;

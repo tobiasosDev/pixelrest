@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pixelrest">
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <rect x="328" y="328" width="72" height="72" fill="#ffffff"/>
+  <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+    <rect x="112" y="112" width="288" height="288"/>
+    <path d="M184 112v288M256 112v288M328 112v288M112 184h288M112 256h288M112 328h288"/>
+  </g>
+</svg>

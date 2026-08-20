@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 240" role="img" aria-label="Pixelrest">
+  <rect width="960" height="240" fill="#0a0a0a"/>
+  <g transform="translate(72 48)">
+    <rect x="108" y="108" width="36" height="36" fill="#ffffff"/>
+    <g fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter">
+      <rect x="0" y="0" width="144" height="144"/>
+      <path d="M36 0v144M72 0v144M108 0v144M0 36h144M0 72h144M0 108h144"/>
+    </g>
+  </g>
+  <text
+    x="248"
+    y="138"
+    fill="#ffffff"
+    font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif"
+    font-size="56"
+    font-weight="400"
+    letter-spacing="10"
+  >PIXELREST</text>
+</svg>

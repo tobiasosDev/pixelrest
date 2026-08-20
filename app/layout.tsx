@@ -16,7 +16,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="stylesheet" href="/styles.css" />
-        <link rel="icon" href="/seed-logos/atlas.svg" type="image/svg+xml" />
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>{children}</body>
     </html>

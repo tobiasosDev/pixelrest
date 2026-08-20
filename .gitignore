@@ -9,3 +9,4 @@ data
 next-env.d.ts
 public/app.js
 
+.env*
