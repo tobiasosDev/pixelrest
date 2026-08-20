@@ -1,0 +1,48 @@
+app/api/presence/route.ts
+  h_5ea1690a39f362 1-58
+app/layout.tsx
+  h_5ea1690a39f362 18
+app/page.tsx
+  h_5ea1690a39f362 30-54
+middleware.ts
+  h_5ea1690a39f362 4-10,29
+public/index.html
+  h_5ea1690a39f362 36-51
+public/styles.css
+  h_5ea1690a39f362 86-223,433,510-511,527-546,553-556
+src/client.ts
+  h_5ea1690a39f362 22,32,38-39,309-455,1163
+src/lib/camera.ts
+  h_5ea1690a39f362 214-247
+src/lib/clock.ts
+  h_5ea1690a39f362 1-19
+src/lib/daily-report.ts
+  h_5ea1690a39f362 2
+src/lib/hud.ts
+  h_5ea1690a39f362 1-124
+src/lib/presence.ts
+  h_5ea1690a39f362 1-117
+src/server.ts
+  h_5ea1690a39f362 7,11,13,98-135,246-248
+supabase/migrations/20260820210000_presence.sql
+  h_5ea1690a39f362 1-10
+test/board.test.ts
+  h_5ea1690a39f362 22,302-312
+test/hud.test.ts
+  h_5ea1690a39f362 1-152
+test/structure.test.ts
+  h_5ea1690a39f362 40-43,69-70,74-86,194-195
+vercel.json
+  h_5ea1690a39f362 51-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "1857e12c2988ef8a22bd1f30bd4ea29082b0cdd0",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
