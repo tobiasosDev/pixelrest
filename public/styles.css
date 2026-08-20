@@ -1,0 +1,387 @@
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --void: #0a0a0a;
+  --ink: #eaeaea;
+  --muted: #8a8a8a;
+  --line: #ffffff;
+  --danger: #e61919;
+  --dock-h: calc(56px + env(safe-area-inset-bottom, 0px));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.35) 2px,
+    rgba(0, 0, 0, 0.35) 4px
+  );
+}
+
+#file-banner {
+  position: relative;
+  z-index: 80;
+  padding: 12px 16px;
+  background: var(--void);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+
+#file-banner code {
+  font-family: inherit;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  background: var(--void);
+}
+
+.mark {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 6;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+#viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+
+#viewport.claim-mode {
+  cursor: crosshair;
+}
+
+#viewport.panning {
+  cursor: grabbing;
+}
+
+#grid-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3200px;
+  height: 3200px;
+  transform-origin: 0 0;
+  background: var(--void);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+#board {
+  display: block;
+  width: 3200px;
+  height: 3200px;
+}
+
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  background: var(--void);
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.tools,
+.zoom-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool,
+.zoom-tools button,
+#claim-submit,
+#ticket-close {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--void);
+  color: var(--ink);
+  font: 400 0.72rem/1 "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  min-height: 36px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 0;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.tool[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--void);
+}
+
+.tool:active,
+.zoom-tools button:active,
+#claim-submit:active {
+  transform: translateY(1px);
+}
+
+.zoom-tools output {
+  font-size: 0.72rem;
+  min-width: 3.4rem;
+  text-align: center;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.dock-msg {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28ch;
+}
+
+.dock-msg[hidden] {
+  display: none;
+}
+
+#ticket {
+  position: fixed;
+  z-index: 90;
+  left: 0;
+  right: 0;
+  bottom: var(--dock-h);
+  background: var(--void);
+  border-top: 1px solid var(--line);
+  padding: 16px;
+  transform: translateY(110%);
+  transition: transform 0.22s ease;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#ticket.open {
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+#claim-form {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.ticket-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: start;
+}
+
+.ticket-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+#quote-line {
+  margin: 0;
+  grid-column: 1 / -1;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#ticket-close {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 6px 8px;
+  min-height: 28px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--void);
+  color: var(--ink);
+  font: 400 0.9rem/1.4 "IBM Plex Mono", ui-monospace, monospace;
+  padding: 10px 12px;
+  border-radius: 0;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #666;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+input:focus,
+textarea:focus,
+.tool:focus-visible,
+.zoom-tools button:focus-visible,
+#claim-submit:focus-visible,
+#ticket-close:focus-visible,
+#tip-open:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+#claim-submit {
+  background: var(--ink);
+  color: var(--void);
+  border-color: var(--ink);
+}
+
+#claim-submit:disabled {
+  opacity: 0.35;
+  cursor: wait;
+}
+
+#tip {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  gap: 10px;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--void);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+#tip[hidden] {
+  display: none;
+}
+
+#tip.pinned {
+  pointer-events: auto;
+}
+
+#tip-text {
+  margin: 0;
+}
+
+#tip-open {
+  display: inline-block;
+  width: fit-content;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--void);
+  font: 400 0.72rem/1 "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#tip-open[hidden] {
+  display: none;
+}
+
+.file-protocol .stage,
+.file-protocol .dock,
+.file-protocol #ticket {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .dock {
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .dock-msg {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ticket {
+    transition: none;
+  }
+}

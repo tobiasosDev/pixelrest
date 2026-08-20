@@ -1,0 +1,11 @@
+node_modules
+data
+.DS_Store
+*.log
+.env.local
+.supabase-db-pass
+.vercel
+.next
+next-env.d.ts
+public/app.js
+

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pixelrest - buy squares, promote an app</title>
+    <meta
+      name="description"
+      content="A square board of 102,400 squares at $10 each. Over a million dollars if it fills. Paste a site URL and we pull the logo from the page."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/seed-logos/atlas.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="file-banner" hidden>
+      This page needs a server. In the project folder run
+      <code>bun start</code>
+      then open
+      <code>http://localhost:3477</code>.
+    </div>
+
+    <main class="stage">
+      <p class="mark">Pixelrest</p>
+      <div id="viewport">
+        <div
+          id="grid-surface"
+          data-canvas-size="3200"
+          style="width: 3200px; height: 3200px"
+        >
+          <canvas id="board" width="3200" height="3200"></canvas>
+        </div>
+      </div>
+    </main>
+
+    <footer class="dock">
+      <div class="tools" role="group" aria-label="Board mode">
+        <button type="button" id="tool-claim" class="tool" aria-pressed="false">Claim</button>
+      </div>
+      <div class="zoom-tools">
+        <button type="button" id="zoom-out" aria-label="Zoom out">-</button>
+        <output id="zoom" for="viewport">100%</output>
+        <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="zoom-fit">Fit</button>
+      </div>
+      <span id="coord" hidden></span>
+      <p id="status" class="dock-msg" hidden></p>
+    </footer>
+
+    <aside id="ticket" aria-hidden="true">
+      <form id="claim-form" novalidate>
+        <header class="ticket-head">
+          <p class="ticket-kicker">Claim</p>
+          <p id="quote-line">No squares selected</p>
+          <button type="button" id="ticket-close" aria-label="Close claim form">Close</button>
+        </header>
+        <label>
+          Website URL
+          <input
+            id="url"
+            name="url"
+            type="url"
+            inputmode="url"
+            autocomplete="url"
+            placeholder="https://your-app.com"
+            required
+          />
+        </label>
+        <p class="hint">No image upload. We load the logo from this page.</p>
+        <label>
+          Description
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            maxlength="280"
+            placeholder="What should people read on hover or a long press?"
+            required
+          ></textarea>
+        </label>
+        <p id="form-error" class="error" hidden></p>
+        <button type="submit" id="claim-submit" disabled>Claim squares</button>
+      </form>
+    </aside>
+
+    <div id="tip" hidden>
+      <p id="tip-text"></p>
+      <a id="tip-open" hidden rel="noopener noreferrer" target="_blank">Open link</a>
+    </div>
+    <a id="occupant-link" hidden rel="noopener"></a>
+
+    <script>
+      if (location.protocol === "file:") {
+        var banner = document.getElementById("file-banner");
+        if (banner) banner.hidden = false;
+        document.documentElement.classList.add("file-protocol");
+      }
+    </script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
