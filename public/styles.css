@@ -268,7 +268,7 @@ textarea {
   border: 1px solid var(--line);
   background: var(--void);
   color: var(--ink);
-  font: 400 0.9rem/1.4 "IBM Plex Mono", ui-monospace, monospace;
+  font: 400 16px/1.4 "IBM Plex Mono", ui-monospace, monospace;
   padding: 10px 12px;
   border-radius: 0;
 }

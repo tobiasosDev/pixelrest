@@ -222,12 +222,13 @@ describe("camera pan and zoom", () => {
     expect(gridIsReachable(collapsed, viewport, gridSize)).toBe(true);
   });
 
-  test("phone starts at 1:1 so the board is panned; desktop fits the board", () => {
-    const phone = initialCamera({ width: 390, height: 720 }, gridSize);
-    expect(phone.zoom).toBe(1);
-    expect(gridIsReachable(phone, { width: 390, height: 720 }, gridSize)).toBe(
-      true,
-    );
+  test("phone and desktop both fit the full square on open", () => {
+    const phoneView = { width: 390, height: 720 };
+    const phone = initialCamera(phoneView, gridSize);
+    expect(phone.zoom).toBeLessThan(1);
+    expect(gridSize * phone.zoom).toBeLessThanOrEqual(phoneView.width + 0.01);
+    expect(gridSize * phone.zoom).toBeLessThanOrEqual(phoneView.height + 0.01);
+    expect(gridIsReachable(phone, phoneView, gridSize)).toBe(true);
     const desktop = initialCamera({ width: 1280, height: 800 }, gridSize);
     expect(desktop.zoom).toBeLessThan(1);
     expect(

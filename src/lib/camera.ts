@@ -233,15 +233,6 @@ export function initialCamera(
   boardHeight: number = boardWidth,
   insets: CameraInsets = ZERO_INSETS,
 ): Camera {
-  if (viewport.width < 720) {
-    return clampCamera(
-      createCamera(),
-      viewport,
-      boardWidth,
-      boardHeight,
-      insets,
-    );
-  }
   return fitCamera(viewport, boardWidth, boardHeight, insets);
 }
 

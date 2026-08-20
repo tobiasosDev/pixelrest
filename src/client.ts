@@ -85,7 +85,6 @@ let dragOrigin: { x: number; y: number; cellX: number; cellY: number } | null =
   null;
 let lastPoint: { x: number; y: number } | null = null;
 let moved = false;
-let dragIsTouch = false;
 let longPressTimer: number | null = null;
 let longPressFired = false;
 let pinch:
@@ -414,7 +413,6 @@ function onPointerDown(event: PointerEvent) {
   pointers.set(event.pointerId, point);
   moved = false;
   longPressFired = false;
-  dragIsTouch = event.pointerType === "touch" || view().width < 720;
   lastPoint = point;
   const cell = cellFromEvent(event);
   dragOrigin = cell
@@ -432,7 +430,7 @@ function onPointerDown(event: PointerEvent) {
     return;
   }
 
-  const panNow = !claimMode || spacePan || dragIsTouch;
+  const panNow = !claimMode || spacePan;
   viewportEl.classList.toggle("panning", panNow);
 
   if (cell) {
@@ -521,7 +519,7 @@ function onPointerMove(event: PointerEvent) {
     clearLongPress();
   }
 
-  if ((!claimMode || spacePan || dragIsTouch) && pointers.size === 1) {
+  if ((!claimMode || spacePan) && pointers.size === 1) {
     camera = panCamera(
       camera,
       dx,
@@ -532,8 +530,10 @@ function onPointerMove(event: PointerEvent) {
       cameraInsets(),
     );
     applyCamera();
-  } else if (claimMode && cell && !spacePan && !dragIsTouch) {
-    setSelection(rectFromPoints(dragOrigin.cellX, dragOrigin.cellY, cell.x, cell.y));
+  } else if (claimMode && cell && !spacePan && moved) {
+    setSelection(
+      rectFromPoints(dragOrigin.cellX, dragOrigin.cellY, cell.x, cell.y),
+    );
   }
 
   lastPoint = point;

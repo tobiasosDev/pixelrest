@@ -39,6 +39,7 @@ describe("page structure", () => {
     expect(html).not.toContain('id="tool-select"');
     expect(html).toContain('class="dock"');
     const css = await read("public/styles.css");
+    expect(css).toMatch(/input[\s\S]*font:[^;]*16px/);
     expect(css.includes("position: fixed")).toBe(true);
     expect(css).toMatch(/\.dock\s*\{[\s\S]*bottom:\s*0/);
     expect(css).toMatch(/#ticket\s*\{[\s\S]*pointer-events:\s*none/);
@@ -46,6 +47,7 @@ describe("page structure", () => {
     expect(html).not.toContain('class="lede"');
     expect(html).not.toContain("Tap a square");
     const src = await read("src/client.ts");
+    expect(src).not.toContain("dragIsTouch");
     expect(src).toContain("tapCellSelection");
     expect(src).toContain("pinInspect");
     expect(src).toContain("cameraInsets");
