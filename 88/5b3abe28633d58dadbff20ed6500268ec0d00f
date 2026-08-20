@@ -1,0 +1,20 @@
+src/client.ts
+  h_5ea1690a39f362 20,26,100-111,113-119,433-435,442-444,486-494,553-555,649-651,662-664,669,700-708,712-720,724-732,736-744,754-756,767-769,806
+src/lib/camera.ts
+  h_5ea1690a39f362 12-41,52,57-58,83,85,89,94-95,97-98,101-102,104-105,118,125,137,139,155-171,179,182-188,190
+test/board.test.ts
+  h_5ea1690a39f362 20,236-254
+test/structure.test.ts
+  h_5ea1690a39f362 51-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "885b3abe28633d58dadbff20ed6500268ec0d00f",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
