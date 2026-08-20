@@ -1,0 +1,26 @@
+.gitignore
+  h_5ea1690a39f362 12
+app/api/webhook/route.ts
+  h_5ea1690a39f362 5
+app/layout.tsx
+  h_5ea1690a39f362 19-20
+public/index.html
+  h_5ea1690a39f362 12-13
+public/logo-light.svg
+  h_5ea1690a39f362 1-8
+public/logo-lockup.svg
+  h_5ea1690a39f362 1-19
+public/logo.svg
+  h_5ea1690a39f362 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "fa0763823b3c5accaa44bcd0e355862d8999a6fa",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
