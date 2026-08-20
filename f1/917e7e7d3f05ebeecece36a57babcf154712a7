@@ -1,0 +1,51 @@
+public/seed-logos/atlas.svg
+  s_c6e8dbfd9ffcab::t_c0312d4a398861 1-5
+public/seed-logos/keel.svg
+  s_c6e8dbfd9ffcab::t_b90acc9a802202 1-5
+public/seed-logos/lumen.svg
+  s_c6e8dbfd9ffcab::t_c3b2d9e1fab949 1-5
+scripts/verify-interactions.ts
+  s_2d56928fe5bccd::t_fb0b379a54a452 1-179
+src/fetch-logo.ts
+  s_c6e8dbfd9ffcab::t_17146d6fefd914 1-163
+src/lib/logo.ts
+  s_2d56928fe5bccd::t_74f5fff9d5b489 1-164
+src/lib/placeholder.ts
+  s_2d56928fe5bccd::t_5bc6a781e14e24 1-25
+src/lib/url.ts
+  s_2d56928fe5bccd::t_cb11f22f3fa1a5 1-21
+vercel.json
+  s_245381c78d1476::t_c4aca67a586e2d 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f1917e7e7d3f05ebeecece36a57babcf154712a7",
+  "prompts": {},
+  "sessions": {
+    "s_245381c78d1476": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bddba557-5d15-4ad3-b6e8-9fe4a23a195d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    },
+    "s_2d56928fe5bccd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "87245d10-a7ce-43ea-bc26-c6b78b2db71f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    },
+    "s_c6e8dbfd9ffcab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c10d39d7-6e92-45f6-a345-8a013fc7da17",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
