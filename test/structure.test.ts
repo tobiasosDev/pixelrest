@@ -50,6 +50,16 @@ describe("page structure", () => {
     expect(src).toContain("pinInspect");
   });
 
+  test("Next.js loads the board script once after hydration", async () => {
+    const page = await read("app/page.tsx");
+    const layout = await read("app/layout.tsx");
+    expect(page).toContain("__PIXELREST_GRID__");
+    expect(page).not.toContain('src="/app.js"');
+    expect(layout).toContain("next/script");
+    expect(layout).toContain('src="/app.js"');
+    expect(layout).toContain('strategy="afterInteractive"');
+  });
+
   test("file: protocol explains how to serve instead of failing silently", async () => {
     const html = await read("public/index.html");
     expect(html).toContain('location.protocol === "file:"');
