@@ -1,0 +1,18 @@
+app/api/checkout/route.ts
+  h_5ea1690a39f362 65
+app/api/webhook/route.ts
+  h_5ea1690a39f362 36-39
+test/structure.test.ts
+  h_5ea1690a39f362 121-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d32a921bca8fd4491c90e7fb84b6eeee9fe6c101",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
