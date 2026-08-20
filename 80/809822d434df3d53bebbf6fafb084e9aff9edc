@@ -1,0 +1,16 @@
+next.config.mjs
+  h_5ea1690a39f362 4-6
+src/lib/board-image.ts
+  h_5ea1690a39f362 1-2,36,203-221,223-226
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "80809822d434df3d53bebbf6fafb084e9aff9edc",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
