@@ -1,0 +1,20 @@
+src/client.ts
+  h_5ea1690a39f362 5,20,70,74,157-168,313,544-546,548,566-567,569,829-838,861,864-877
+src/lib/board.ts
+  h_5ea1690a39f362 87-97
+test/board.test.ts
+  h_5ea1690a39f362 11,99-119
+test/structure.test.ts
+  h_5ea1690a39f362 56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "409eeb1168c4ed753a9c6e1d74b75029b94a0649",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
