@@ -11,8 +11,8 @@ import {
 import { placeholderRgb } from "./placeholder";
 
 export const X_POST_WIDTH = 1200;
-export const X_POST_HEIGHT = 675;
-export const BOARD_CELL_PX = 2;
+export const X_POST_HEIGHT = 1200;
+export const BOARD_CELL_PX = 3;
 export const BOARD_PX = DEFAULT_COLS * BOARD_CELL_PX;
 const VOID = { r: 10, g: 10, b: 10, a: 255 };
 const LINE = { r: 128, g: 128, b: 128, a: 255 };

@@ -118,7 +118,7 @@ describe("same functions as the unit tests", () => {
     expect(classList).toContain("file-protocol");
   });
 
-  test("daily X cron is authorized and posts a 16:9 board image", async () => {
+  test("daily X cron is authorized and posts a square board image", async () => {
     const cron = await read("app/api/cron/daily/route.ts");
     const vercel = await read("vercel.json");
     expect(cron).toContain("CRON_SECRET");

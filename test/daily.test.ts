@@ -121,13 +121,14 @@ describe("daily report", () => {
 });
 
 describe("X board image", () => {
-  test("uses a 16:9 canvas with the square board centered", () => {
+  test("uses a square X block with the board perfectly centered", () => {
     expect(X_POST_WIDTH).toBe(1200);
-    expect(X_POST_HEIGHT).toBe(675);
+    expect(X_POST_HEIGHT).toBe(1200);
     const origin = boardOrigin();
-    expect(origin.x).toBe(Math.floor((1200 - 640) / 2));
-    expect(origin.y).toBe(Math.floor((675 - 640) / 2));
-    expect(origin.x * 2 + 640).toBe(1200);
+    expect(origin.x).toBe(120);
+    expect(origin.y).toBe(120);
+    expect(origin.x * 2 + 960).toBe(X_POST_WIDTH);
+    expect(origin.y * 2 + 960).toBe(X_POST_HEIGHT);
   });
 
   test("renders a PNG that fits an X photo post", async () => {
@@ -157,7 +158,7 @@ describe("X board image", () => {
     const sharp = (await import("sharp")).default;
     const meta = await sharp(png).metadata();
     expect(meta.width).toBe(1200);
-    expect(meta.height).toBe(675);
+    expect(meta.height).toBe(1200);
     expect(meta.format).toBe("png");
   });
 });
