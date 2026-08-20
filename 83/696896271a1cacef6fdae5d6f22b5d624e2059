@@ -1,0 +1,20 @@
+app/api/x/callback/route.ts
+  h_5ea1690a39f362 1-5,39-41,43,46-62
+src/lib/x-auth.ts
+  h_5ea1690a39f362 20-28,64-65,73-74,87,93,99,104-105,116-139,151-171,174,191-229
+src/lib/x-post.ts
+  h_5ea1690a39f362 5-10,34,49-60
+supabase/migrations/20260820193000_x_auth_oauth2.sql
+  h_5ea1690a39f362 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "83696896271a1cacef6fdae5d6f22b5d624e2059",
+  "prompts": {},
+  "humans": {
+    "h_5ea1690a39f362": {
+      "author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
