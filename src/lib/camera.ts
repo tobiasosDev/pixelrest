@@ -211,6 +211,40 @@ export function revealWorldRect(
   );
 }
 
+export function frameWorldRect(
+  viewport: Viewport,
+  boardWidth: number,
+  boardHeight: number,
+  world: { x: number; y: number; width: number; height: number },
+  insets: CameraInsets = ZERO_INSETS,
+  fill = 0.62,
+): Camera {
+  const box = contentBox(viewport, insets);
+  const margin = 24;
+  const innerWidth = Math.max(1, box.width - margin * 2);
+  const innerHeight = Math.max(1, box.height - margin * 2);
+  const worldWidth = Math.max(1, world.width);
+  const worldHeight = Math.max(1, world.height);
+  const zoom = Math.min(
+    MAX_ZOOM,
+    Math.max(
+      minZoomFor(viewport, boardWidth, boardHeight, insets),
+      Math.min(innerWidth / worldWidth, innerHeight / worldHeight) * fill,
+    ),
+  );
+  return clampCamera(
+    {
+      x: box.x + box.width / 2 - (world.x + worldWidth / 2) * zoom,
+      y: box.y + box.height / 2 - (world.y + worldHeight / 2) * zoom,
+      zoom,
+    },
+    viewport,
+    boardWidth,
+    boardHeight,
+    insets,
+  );
+}
+
 export function fitCamera(
   viewport: Viewport,
   boardWidth: number,

@@ -27,6 +27,31 @@ export default async function Page() {
           </div>
         </div>
       </main>
+      <aside id="hud" aria-label="Board activity">
+        <dl className="hud-stats">
+          <div>
+            <dt>
+              <span className="hud-dot" aria-hidden="true" />
+              Live
+            </dt>
+            <dd id="hud-live">–</dd>
+          </div>
+          <div>
+            <dt>Today</dt>
+            <dd id="hud-today">–</dd>
+          </div>
+        </dl>
+        <p className="hud-kicker">Holders</p>
+        <button
+          type="button"
+          id="hud-toggle"
+          aria-expanded="false"
+          aria-controls="hud-holders"
+        >
+          Holders
+        </button>
+        <ol id="hud-holders" />
+      </aside>
       <footer className="dock">
         <div className="tools" role="group" aria-label="Board mode">
           <button

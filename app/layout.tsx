@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "A square board of 102,400 squares at $10 each. Over a million dollars if it fills.",
 };
 
-const cssHref = `/styles.css?v=${process.env.NEXT_PUBLIC_BUILD_ID ?? "4"}`;
+const cssHref = `/styles.css?v=${process.env.NEXT_PUBLIC_BUILD_ID ?? "5"}`;
 
 export default function RootLayout({
   children,

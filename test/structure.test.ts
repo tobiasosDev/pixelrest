@@ -37,6 +37,10 @@ describe("page structure", () => {
     expect(html).not.toContain('class="rates"');
     expect(html).not.toMatch(/<dt>Vacant<\/dt>/);
     expect(html).not.toContain('id="tool-select"');
+    expect(html).toContain('id="hud"');
+    expect(html).toContain('id="hud-live"');
+    expect(html).toContain('id="hud-today"');
+    expect(html).toContain('id="hud-holders"');
     expect(html).toContain('class="dock"');
     const css = await read("public/styles.css");
     expect(css).toMatch(/input[\s\S]*font:[^;]*16px/);
@@ -62,7 +66,22 @@ describe("page structure", () => {
     const layout = await read("app/layout.tsx");
     expect(page).toContain("__PIXELREST_GRID__");
     expect(page).toContain("BoardLoader");
+    expect(page).toContain('id="hud"');
+    expect(page).toContain('id="hud-holders"');
     expect(layout).not.toContain('src="/app.js"');
+  });
+
+  test("presence endpoint heartbeats anonymous viewers and returns holders", async () => {
+    const route = await read("app/api/presence/route.ts");
+    const presence = await read("src/lib/presence.ts");
+    const client = await read("src/client.ts");
+    const css = await read("public/styles.css");
+    expect(route).toContain("heartbeatVisitor");
+    expect(presence).toContain("rankHolders");
+    expect(client).toContain("/api/presence");
+    expect(client).toContain("pixelrest-visitor");
+    expect(client).toContain("frameWorldRect");
+    expect(css).toMatch(/#hud\s*\{[\s\S]*position:\s*fixed/);
   });
 
   test("mobile cannot keep a cached board script or HTML shell", async () => {
@@ -172,6 +191,8 @@ describe("same functions as the unit tests", () => {
     expect(src).toContain("applyClaim");
     expect(src).toContain("quoteRegion");
     expect(src).toContain("fetchWebsiteLogo");
+    expect(src).toContain("/api/presence");
+    expect(src).toContain("heartbeatLocal");
     expect(src.toLowerCase()).not.toContain("stripe");
     const fetchSrc = await read("src/fetch-logo.ts");
     expect(fetchSrc).toContain("resolveLogoFromHtml");

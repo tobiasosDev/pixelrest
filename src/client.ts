@@ -19,6 +19,7 @@ import {
   clampCamera,
   createCamera,
   fitCamera,
+  frameWorldRect,
   minZoomFor,
   panCamera,
   revealWorldRect,
@@ -28,11 +29,14 @@ import {
   type CameraInsets,
   type Viewport,
 } from "./lib/camera";
+import { isVisitorId, rankHolders, type Holder } from "./lib/hud";
 import { resolveLogoFromHtml } from "./lib/logo";
 import { placeholderDataUrl } from "./lib/placeholder";
 
 const LONG_PRESS_MS = 500;
 const MOVE_THRESHOLD = 8;
+const VISITOR_KEY = "pixelrest-visitor";
+const HEARTBEAT_MS = 20_000;
 const VACANT = "#0a0a0a";
 const LINE = "rgba(255,255,255,0.18)";
 const LINE_STRONG = "rgba(255,255,255,0.5)";
@@ -300,6 +304,153 @@ function setClaimMode(next: boolean) {
 
 function logoSrc(url: string, logoUrl: string | null): string {
   return logoUrl && logoUrl.length > 0 ? logoUrl : placeholderDataUrl(url);
+}
+
+function visitorId(): string {
+  try {
+    const existing = window.localStorage.getItem(VISITOR_KEY);
+    if (existing && isVisitorId(existing)) {
+      return existing;
+    }
+    const id = crypto.randomUUID();
+    window.localStorage.setItem(VISITOR_KEY, id);
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function holdersFromGrid(): Holder[] {
+  return rankHolders(
+    groupClaims(grid).map((region) => ({
+      url: region.occupant.url,
+      logoUrl: region.occupant.logoUrl,
+      squares: region.cells.length,
+      x: region.minX,
+      y: region.minY,
+      width: region.maxX - region.minX + 1,
+      height: region.maxY - region.minY + 1,
+    })),
+  );
+}
+
+function renderCounts(live: number, today: number) {
+  const liveEl = document.getElementById("hud-live");
+  const todayEl = document.getElementById("hud-today");
+  if (liveEl) {
+    liveEl.textContent = String(live);
+  }
+  if (todayEl) {
+    todayEl.textContent = String(today);
+  }
+}
+
+function focusHolder(holder: Holder) {
+  userInteracted = true;
+  camera = frameWorldRect(
+    view(),
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    {
+      x: holder.x * grid.cellSize,
+      y: holder.y * grid.cellSize,
+      width: holder.width * grid.cellSize,
+      height: holder.height * grid.cellSize,
+    },
+    cameraInsets(),
+  );
+  applyCamera();
+}
+
+function renderHolders(holders: Holder[]) {
+  const list = document.getElementById("hud-holders");
+  if (!list) {
+    return;
+  }
+  list.replaceChildren();
+  if (holders.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "hud-empty";
+    empty.textContent = "No holders yet";
+    list.append(empty);
+    return;
+  }
+  for (const holder of holders) {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hud-holder";
+    const img = document.createElement("img");
+    img.alt = "";
+    img.src = logoSrc(holder.url, holder.logoUrl);
+    const host = document.createElement("span");
+    host.className = "hud-host";
+    host.textContent = holder.host;
+    const squares = document.createElement("span");
+    squares.className = "hud-squares";
+    squares.textContent = String(holder.squares);
+    button.append(img, host, squares);
+    button.addEventListener("click", () => focusHolder(holder));
+    item.append(button);
+    list.append(item);
+  }
+}
+
+async function syncPresence() {
+  if (document.visibilityState === "hidden") {
+    return;
+  }
+  try {
+    const response = await fetch("/api/presence", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ visitorId: visitorId() }),
+    });
+    if (!response.ok) {
+      return;
+    }
+    const data = (await response.json()) as {
+      live?: number;
+      today?: number;
+      holders?: Holder[];
+    };
+    if (typeof data.live === "number" && typeof data.today === "number") {
+      renderCounts(data.live, data.today);
+    }
+    if (Array.isArray(data.holders) && data.holders.length > 0) {
+      renderHolders(data.holders);
+    }
+  } catch {
+    // HUD stays on the last known local numbers.
+  }
+}
+
+function startPresence() {
+  renderCounts(1, 1);
+  renderHolders(holdersFromGrid());
+  void syncPresence();
+  window.setInterval(() => {
+    void syncPresence();
+  }, HEARTBEAT_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      void syncPresence();
+    }
+  });
+  const hud = document.getElementById("hud");
+  const toggle = document.getElementById("hud-toggle");
+  toggle?.addEventListener("click", () => {
+    if (!hud) {
+      return;
+    }
+    const open = hud.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", String(open));
+    invalidateInsets();
+    if (!userInteracted) {
+      fitToScreen();
+    }
+  });
 }
 
 function ensureImage(src: string, fallbackUrl: string): HTMLImageElement {
@@ -1009,6 +1160,7 @@ window.__lastResort = {
 setClaimMode(false);
 paint();
 await loadGrid();
+startPresence();
 fitToScreen();
 for (const ms of [0, 50, 150, 400, 1000]) {
   window.setTimeout(() => {

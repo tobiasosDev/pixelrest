@@ -4,10 +4,13 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   clipRect,
+  groupClaims,
   quoteRegion,
   type GridState,
 } from "./lib/board";
+import { isVisitorId, rankHolders } from "./lib/hud";
 import { snapshot } from "./lib/persist";
+import { heartbeatLocal, readLocalCounts } from "./lib/presence";
 import { normalizeWebsiteUrl } from "./lib/url";
 import { fetchWebsiteLogo } from "./fetch-logo";
 import {
@@ -90,6 +93,44 @@ async function serveLogo(pathname: string): Promise<Response | null> {
 
 function gridPayload() {
   return snapshot(grid);
+}
+
+function holdersPayload() {
+  return rankHolders(
+    groupClaims(grid).map((region) => ({
+      url: region.occupant.url,
+      logoUrl: region.occupant.logoUrl,
+      squares: region.cells.length,
+      x: region.minX,
+      y: region.minY,
+      width: region.maxX - region.minX + 1,
+      height: region.maxY - region.minY + 1,
+    })),
+  );
+}
+
+async function handlePresence(req: Request): Promise<Response> {
+  if (req.method === "GET") {
+    const counts = readLocalCounts();
+    return Response.json({
+      live: counts.live,
+      today: counts.today,
+      holders: holdersPayload(),
+    });
+  }
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+  const body = (await req.json()) as { visitorId?: unknown };
+  if (!isVisitorId(body.visitorId)) {
+    return Response.json({ error: "invalid visitor" }, { status: 400 });
+  }
+  const counts = heartbeatLocal(body.visitorId);
+  return Response.json({
+    live: counts.live,
+    today: counts.today,
+    holders: holdersPayload(),
+  });
 }
 
 async function handleQuote(req: Request): Promise<Response> {
@@ -201,6 +242,9 @@ const server = Bun.serve({
 
     if (pathname === "/api/grid" && req.method === "GET") {
       return Response.json(gridPayload());
+    }
+    if (pathname === "/api/presence" && (req.method === "GET" || req.method === "POST")) {
+      return handlePresence(req);
     }
     if (pathname === "/api/quote" && req.method === "POST") {
       return handleQuote(req);

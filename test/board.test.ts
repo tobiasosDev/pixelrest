@@ -19,6 +19,7 @@ import {
   createCamera,
   gridIsReachable,
   fitCamera,
+  frameWorldRect,
   initialCamera,
   panCamera,
   revealWorldRect,
@@ -297,6 +298,17 @@ describe("camera pan and zoom", () => {
     expect(bottom).toBeLessThanOrEqual(
       viewport.height - insets.bottom + 0.01,
     );
+  });
+
+  test("framing a claimed block zooms in and centers it in the viewport", () => {
+    const viewport = { width: 800, height: 600 };
+    const world = { x: 200, y: 200, width: 100, height: 100 };
+    const framed = frameWorldRect(viewport, 1000, 1000, world);
+    const centerX = framed.x + 250 * framed.zoom;
+    const centerY = framed.y + 250 * framed.zoom;
+    expect(framed.zoom).toBeGreaterThan(1);
+    expect(centerX).toBeCloseTo(400, 0);
+    expect(centerY).toBeCloseTo(300, 0);
   });
 });
 

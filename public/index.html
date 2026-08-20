@@ -33,6 +33,22 @@
       </div>
     </main>
 
+    <aside id="hud" aria-label="Board activity">
+      <dl class="hud-stats">
+        <div>
+          <dt><span class="hud-dot" aria-hidden="true"></span> Live</dt>
+          <dd id="hud-live">&ndash;</dd>
+        </div>
+        <div>
+          <dt>Today</dt>
+          <dd id="hud-today">&ndash;</dd>
+        </div>
+      </dl>
+      <p class="hud-kicker">Holders</p>
+      <button type="button" id="hud-toggle" aria-expanded="false" aria-controls="hud-holders">Holders</button>
+      <ol id="hud-holders"></ol>
+    </aside>
+
     <footer class="dock">
       <div class="tools" role="group" aria-label="Board mode">
         <button type="button" id="tool-claim" class="tool" aria-pressed="false">Claim</button>

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const NO_STORE_PATHS = new Set(["/", "/app.js", "/styles.css", "/api/grid"]);
+const NO_STORE_PATHS = new Set([
+  "/",
+  "/app.js",
+  "/styles.css",
+  "/api/grid",
+  "/api/presence",
+]);
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -20,5 +26,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/app.js", "/styles.css", "/api/grid"],
+  matcher: ["/", "/app.js", "/styles.css", "/api/grid", "/api/presence"],
 };

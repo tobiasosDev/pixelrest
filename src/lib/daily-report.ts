@@ -1,4 +1,5 @@
 import { BOARD_SQUARES } from "./board";
+import { zurichDateLabel, zurichDayKey } from "./clock";
 import { hostnameOf } from "./url";
 
 export interface StoredClaim {
@@ -28,26 +29,6 @@ export interface DailyReport {
   occupiedSquares: number;
   openSquares: number;
   tweet: string;
-}
-
-const ZURICH = "Europe/Zurich";
-
-export function zurichDayKey(now: Date): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: ZURICH,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-}
-
-export function zurichDateLabel(now: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: ZURICH,
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(now);
 }
 
 function onZurichDay(iso: string, dayKey: string): boolean {
