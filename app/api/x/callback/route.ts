@@ -1,4 +1,8 @@
-import { finishXConnect, xCallbackUrl } from "../../../../src/lib/x-auth";
+import {
+  finishXConnect,
+  finishXConnectOAuth2,
+  xCallbackUrl,
+} from "../../../../src/lib/x-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +36,29 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const oauthToken = url.searchParams.get("oauth_token");
   const oauthVerifier = url.searchParams.get("oauth_verifier");
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
   const denied = url.searchParams.get("denied");
-  if (denied) {
+  if (denied || error === "access_denied") {
     return page("Pixelrest X", "<p>X authorization was cancelled.</p>");
+  }
+  if (code && state) {
+    try {
+      const result = await finishXConnectOAuth2({ code, state });
+      const who = result.screenName ? `@${result.screenName}` : "X";
+      return page(
+        "Pixelrest connected",
+        `<p>Connected to ${who}. Daily board posts will go to this account.</p>`,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "connect failed";
+      const safe = message
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+      return page("Pixelrest X", `<p>${safe}</p>`);
+    }
   }
   if (!oauthToken && !oauthVerifier) {
     return page(

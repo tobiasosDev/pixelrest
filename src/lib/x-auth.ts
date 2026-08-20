@@ -17,6 +17,15 @@ export function appXKeys(): { appKey: string; appSecret: string } | null {
   return { appKey, appSecret };
 }
 
+export function oauth2App(): { clientId: string; clientSecret: string } | null {
+  const clientId = process.env.X_CLIENT_ID;
+  const clientSecret = process.env.X_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return null;
+  }
+  return { clientId, clientSecret };
+}
+
 export async function saveOAuthPending(options: {
   oauthToken: string;
   oauthTokenSecret: string;
@@ -52,7 +61,8 @@ export async function takeOAuthPending(
 
 export async function saveXUser(options: {
   accessToken: string;
-  accessSecret: string;
+  accessSecret?: string | null;
+  refreshToken?: string | null;
   userId?: string;
   screenName?: string;
 }): Promise<void> {
@@ -60,7 +70,8 @@ export async function saveXUser(options: {
   const { error } = await admin.from("x_auth").upsert({
     id: 1,
     access_token: options.accessToken,
-    access_secret: options.accessSecret,
+    access_secret: options.accessSecret ?? "",
+    refresh_token: options.refreshToken ?? null,
     user_id: options.userId ?? null,
     screen_name: options.screenName ?? null,
     updated_at: new Date().toISOString(),
@@ -73,23 +84,25 @@ export async function saveXUser(options: {
 export async function loadStoredXUser(): Promise<{
   accessToken: string;
   accessSecret: string;
+  refreshToken: string | null;
   screenName: string | null;
 } | null> {
   const admin = supabaseAdmin();
   const { data, error } = await admin
     .from("x_auth")
-    .select("access_token,access_secret,screen_name")
+    .select("access_token,access_secret,refresh_token,screen_name")
     .eq("id", 1)
     .maybeSingle();
   if (error) {
     throw error;
   }
-  if (!data?.access_token || !data?.access_secret) {
+  if (!data?.access_token) {
     return null;
   }
   return {
     accessToken: data.access_token as string,
-    accessSecret: data.access_secret as string,
+    accessSecret: (data.access_secret as string | null) ?? "",
+    refreshToken: (data.refresh_token as string | null) ?? null,
     screenName: (data.screen_name as string | null) ?? null,
   };
 }
@@ -99,9 +112,31 @@ export async function resolveXCredentials(): Promise<XCredentials | null> {
   if (fromEnv) {
     return fromEnv;
   }
-  const app = appXKeys();
   const stored = await loadStoredXUser();
-  if (!app || !stored) {
+  if (!stored) {
+    return null;
+  }
+  const oauth2 = oauth2App();
+  if (stored.refreshToken && oauth2) {
+    const client = new TwitterApi({
+      clientId: oauth2.clientId,
+      clientSecret: oauth2.clientSecret,
+    });
+    const refreshed = await client.refreshOAuth2Token(stored.refreshToken);
+    await saveXUser({
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken ?? stored.refreshToken,
+      screenName: stored.screenName ?? undefined,
+    });
+    return {
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken ?? stored.refreshToken,
+      clientId: oauth2.clientId,
+      clientSecret: oauth2.clientSecret,
+    };
+  }
+  const app = appXKeys();
+  if (!app || !stored.accessSecret) {
     return null;
   }
   return {
@@ -113,9 +148,30 @@ export async function resolveXCredentials(): Promise<XCredentials | null> {
 }
 
 export async function startXConnect(): Promise<string> {
+  const oauth2 = oauth2App();
+  if (oauth2) {
+    const client = new TwitterApi({
+      clientId: oauth2.clientId,
+      clientSecret: oauth2.clientSecret,
+    });
+    const link = client.generateOAuth2AuthLink(xCallbackUrl(), {
+      scope: [
+        "tweet.read",
+        "tweet.write",
+        "users.read",
+        "offline.access",
+        "media.write",
+      ],
+    });
+    await saveOAuthPending({
+      oauthToken: link.state,
+      oauthTokenSecret: link.codeVerifier,
+    });
+    return link.url;
+  }
   const app = appXKeys();
   if (!app) {
-    throw new Error("X consumer keys are missing");
+    throw new Error("X client keys are missing");
   }
   const client = new TwitterApi({
     appKey: app.appKey,
@@ -130,6 +186,45 @@ export async function startXConnect(): Promise<string> {
     oauthTokenSecret: link.oauth_token_secret,
   });
   return link.url;
+}
+
+export async function finishXConnectOAuth2(options: {
+  state: string;
+  code: string;
+}): Promise<{ screenName: string | null }> {
+  const oauth2 = oauth2App();
+  if (!oauth2) {
+    throw new Error("X client keys are missing");
+  }
+  const codeVerifier = await takeOAuthPending(options.state);
+  if (!codeVerifier) {
+    throw new Error("OAuth session expired. Start connect again.");
+  }
+  const client = new TwitterApi({
+    clientId: oauth2.clientId,
+    clientSecret: oauth2.clientSecret,
+  });
+  const logged = await client.loginWithOAuth2({
+    code: options.code,
+    codeVerifier,
+    redirectUri: xCallbackUrl(),
+  });
+  let screenName: string | null = null;
+  let userId: string | undefined;
+  try {
+    const me = await logged.client.v2.me();
+    screenName = me.data.username ?? null;
+    userId = me.data.id;
+  } catch {
+    screenName = null;
+  }
+  await saveXUser({
+    accessToken: logged.accessToken,
+    refreshToken: logged.refreshToken ?? null,
+    userId,
+    screenName: screenName ?? undefined,
+  });
+  return { screenName };
 }
 
 export async function finishXConnect(options: {

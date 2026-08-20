@@ -1,10 +1,13 @@
 import { EUploadMimeType, TwitterApi } from "twitter-api-v2";
 
 export interface XCredentials {
-  appKey: string;
-  appSecret: string;
   accessToken: string;
-  accessSecret: string;
+  accessSecret?: string;
+  refreshToken?: string | null;
+  appKey?: string;
+  appSecret?: string;
+  clientId?: string;
+  clientSecret?: string;
 }
 
 export function readXCredentials(): XCredentials | null {
@@ -28,7 +31,7 @@ export async function postImageTweet(options: {
   if (!credentials) {
     throw new Error("X API credentials are missing");
   }
-  const client = new TwitterApi(credentials);
+  const client = twitterClient(credentials);
   const mediaId = await client.v2.uploadMedia(options.image, {
     media_type: EUploadMimeType.Png,
     media_category: "tweet_image",
@@ -42,4 +45,16 @@ export async function postImageTweet(options: {
     throw new Error("X did not return a post id");
   }
   return { id };
+}
+
+function twitterClient(credentials: XCredentials): TwitterApi {
+  if (credentials.accessSecret && credentials.appKey && credentials.appSecret) {
+    return new TwitterApi({
+      appKey: credentials.appKey,
+      appSecret: credentials.appSecret,
+      accessToken: credentials.accessToken,
+      accessSecret: credentials.accessSecret,
+    });
+  }
+  return new TwitterApi(credentials.accessToken);
 }
