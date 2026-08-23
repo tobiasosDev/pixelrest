@@ -1,0 +1,70 @@
+src/lib/uuid.ts
+  s_c6dac68cf34f85::t_f674f561a89ef6 2-18
+  s_c6dac68cf34f85::t_aeadfa23f6c913 1
+src/lib/with-retry.ts
+  s_c6dac68cf34f85::t_dc873127812196 1-18
+test/ttl-cache.test.ts
+  s_c6dac68cf34f85::t_2944ed41774cfc 1-49,52,54-98
+  s_c6dac68cf34f85::t_e52e66ab6d1d2e 50-51,53
+src/lib/presence.ts
+  s_c6dac68cf34f85::t_25c3292f5aae4d 12,14-42
+  s_c6dac68cf34f85::t_c80b6439e85721 131
+app/page.tsx
+  s_c6dac68cf34f85::t_7445b133ff3208 24-25,27
+  s_c6dac68cf34f85::t_035062c1a971fd 2
+src/lib/ttl-cache.ts
+  s_c6dac68cf34f85::t_87bcefab3873a4 1-46
+test/connect-route.test.ts
+  s_c6dac68cf34f85::t_81a31eb9ce249c 1-62
+src/lib/single-flight.ts
+  s_c6dac68cf34f85::t_143feeb4a1df37 1-16
+test/structure.test.ts
+  s_c6dac68cf34f85::t_6bdbfa0dd2b290 172-178
+app/api/x/connect/route.ts
+  s_c6dac68cf34f85::t_8e26f15b27a1e3 7-8
+test/uuid.test.ts
+  s_c6dac68cf34f85::t_d1d1f03d0d8648 1-24
+src/fetch-logo.ts
+  s_c6dac68cf34f85::t_3a16eedd582bb6 1-2,8-9,11-93,106-107,109-110,119-130,142-148,151,153,159,166-183
+  s_c6dac68cf34f85::t_3d321b4dde9e1c 187,191-219,230,232
+  s_c6dac68cf34f85::t_ada74176062eb6 94-105,108,111-118
+test/fetch-logo.test.ts
+  s_c6dac68cf34f85::t_7d98b22bb67e99 1-50,52-55
+  s_c6dac68cf34f85::t_270c1de3d95f48 51
+src/lib/x-auth.ts
+  s_c6dac68cf34f85::t_0120d9f0e9fd9f 3
+  s_c6dac68cf34f85::t_57abaa6e98fbca 111-116,121,125,130,134-150
+  s_c6dac68cf34f85::t_a9980818f7bf99 122,126
+src/lib/grid-db.ts
+  s_c6dac68cf34f85::t_886ae53140cdd1 100,115
+  s_c6dac68cf34f85::t_2e4efc35bd4e36 139-145,154,159,173
+app/api/checkout/route.ts
+  s_c6dac68cf34f85::t_5bf3a60eb11e36 93,104-110
+src/client.ts
+  s_c6dac68cf34f85::t_2b6a371b07bfb0 35
+  s_c6dac68cf34f85::t_5c38385d613c40 484-485,487,495,497,505,507
+  s_c6dac68cf34f85::t_52953de972ad65 322,326
+test/single-flight.test.ts
+  s_c6dac68cf34f85::t_6c16ba1c45094d 1-69
+test/with-retry.test.ts
+  s_c6dac68cf34f85::t_aaca14914bbdf4 1-53
+app/api/cron/daily/route.ts
+  s_c6dac68cf34f85::t_9d5db998dc8a8d 86-112
+  s_c6dac68cf34f85::t_69bc8f737918d8 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a5850ca1f9db10a7c290613d57f64c7b5a24932e",
+  "prompts": {},
+  "sessions": {
+    "s_c6dac68cf34f85": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_fd2515874ffeyN974Rh0orWtnm",
+        "model": "x-preview-f-free"
+      },
+      "human_author": "Tobias Lüscher <luescher.tobias1@gmail.com>"
+    }
+  }
+}
