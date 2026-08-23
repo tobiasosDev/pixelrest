@@ -4,8 +4,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
-  const provided = new URL(req.url).searchParams.get("secret");
-  if (!secret || provided !== secret) {
+  const provided = req.headers.get("authorization");
+  if (!secret || provided !== `Bearer ${secret}`) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   try {

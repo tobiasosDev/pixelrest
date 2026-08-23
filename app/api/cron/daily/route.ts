@@ -9,6 +9,7 @@ import {
   saveDailyPost,
 } from "../../../../src/lib/grid-db";
 import { resolveXCredentials } from "../../../../src/lib/x-auth";
+import { withRetry } from "../../../../src/lib/with-retry";
 import { postImageTweet } from "../../../../src/lib/x-post";
 
 export const dynamic = "force-dynamic";
@@ -82,13 +83,33 @@ async function run(req: Request): Promise<Response> {
     image,
     credentials,
   });
-  await saveDailyPost({
-    dayKey: report.dayKey,
-    tweetId: posted.id,
-    body: report.tweet,
-    newClaimIds: report.newClaims.map((claim) => claim.id),
-    occupiedCount: report.occupiedSquares,
-  });
+  try {
+    await withRetry(
+      () =>
+        saveDailyPost({
+          dayKey: report.dayKey,
+          tweetId: posted.id,
+          body: report.tweet,
+          newClaimIds: report.newClaims.map((claim) => claim.id),
+          occupiedCount: report.occupiedSquares,
+        }),
+      3,
+      500,
+    );
+  } catch (error) {
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "could not record the daily post",
+        dayKey: report.dayKey,
+        tweetId: posted.id,
+        warning: "tweet posted but not recorded; record it to avoid reposts",
+      },
+      { status: 500 },
+    );
+  }
   return Response.json({
     ok: true,
     dayKey: report.dayKey,

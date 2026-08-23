@@ -97,7 +97,7 @@ export async function loadSnapshot(): Promise<GridSnapshot> {
 async function uploadLogo(
   claimId: string,
   websiteUrl: string,
-): Promise<string | null> {
+): Promise<{ path: string; publicUrl: string | null } | null> {
   const fetched = await fetchWebsiteLogo(websiteUrl);
   if (!fetched) {
     return null;
@@ -112,7 +112,7 @@ async function uploadLogo(
     return null;
   }
   const { data } = admin.storage.from("logos").getPublicUrl(path);
-  return data.publicUrl ?? null;
+  return { path, publicUrl: data.publicUrl ?? null };
 }
 
 export async function fulfillPaidClaim(options: {
@@ -136,7 +136,13 @@ export async function fulfillPaidClaim(options: {
     return { ok: false, reason: "taken" };
   }
   const claimId = crypto.randomUUID();
-  const logoUrl = await uploadLogo(claimId, options.url);
+  const logo = await uploadLogo(claimId, options.url);
+  const removeLogo = async (): Promise<void> => {
+    if (!logo) {
+      return;
+    }
+    await admin.storage.from("logos").remove([logo.path]);
+  };
   const { error: claimError } = await admin.from("claims").insert({
     id: claimId,
     x: rect.x,
@@ -145,11 +151,12 @@ export async function fulfillPaidClaim(options: {
     height: rect.height,
     url: options.url,
     description: options.description,
-    logo_url: logoUrl,
+    logo_url: logo?.publicUrl ?? null,
     owner_email: options.ownerEmail,
     stripe_session_id: options.stripeSessionId,
   });
   if (claimError) {
+    await removeLogo();
     if (claimError.code === "23505") {
       return { ok: true };
     }
@@ -163,6 +170,7 @@ export async function fulfillPaidClaim(options: {
   const { error: occError } = await admin.from("occupancy").insert(rows);
   if (occError) {
     await admin.from("claims").delete().eq("id", claimId);
+    await removeLogo();
     return { ok: false, reason: "taken" };
   }
   await admin

@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       return Response.json({ error: "Checkout did not start." }, { status: 500 });
     }
     const admin = supabaseAdmin();
-    await admin.from("pending_checkouts").insert({
+    const { error: pendingError } = await admin.from("pending_checkouts").insert({
       stripe_session_id: session.id,
       x: rect.x,
       y: rect.y,
@@ -101,6 +101,13 @@ export async function POST(req: Request) {
       square_count: quote.vacantCount,
       amount_cents: quote.total * 100,
     });
+    if (pendingError) {
+      console.error(
+        "pending checkout record failed",
+        session.id,
+        pendingError.message,
+      );
+    }
     return Response.json({ checkoutUrl: session.url });
   } catch (error) {
     return Response.json(

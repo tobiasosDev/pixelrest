@@ -1,5 +1,6 @@
 import { TwitterApi } from "twitter-api-v2";
 import { supabaseAdmin } from "./supabase";
+import { singleFlight } from "./single-flight";
 import { readXCredentials, type XCredentials } from "./x-post";
 
 export function xCallbackUrl(): string {
@@ -107,6 +108,32 @@ export async function loadStoredXUser(): Promise<{
   };
 }
 
+const refreshWithSingleUseToken = singleFlight(
+  async (refreshToken: string): Promise<XCredentials | null> => {
+    const oauth2 = oauth2App();
+    if (!oauth2) {
+      return null;
+    }
+    const client = new TwitterApi({
+      clientId: oauth2.clientId,
+      clientSecret: oauth2.clientSecret,
+    });
+    const refreshed = await client.refreshOAuth2Token(refreshToken);
+    const stored = await loadStoredXUser();
+    await saveXUser({
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken ?? refreshToken,
+      screenName: stored?.screenName ?? undefined,
+    });
+    return {
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken ?? refreshToken,
+      clientId: oauth2.clientId,
+      clientSecret: oauth2.clientSecret,
+    };
+  },
+);
+
 export async function resolveXCredentials(): Promise<XCredentials | null> {
   const fromEnv = readXCredentials();
   if (fromEnv) {
@@ -116,24 +143,11 @@ export async function resolveXCredentials(): Promise<XCredentials | null> {
   if (!stored) {
     return null;
   }
-  const oauth2 = oauth2App();
-  if (stored.refreshToken && oauth2) {
-    const client = new TwitterApi({
-      clientId: oauth2.clientId,
-      clientSecret: oauth2.clientSecret,
-    });
-    const refreshed = await client.refreshOAuth2Token(stored.refreshToken);
-    await saveXUser({
-      accessToken: refreshed.accessToken,
-      refreshToken: refreshed.refreshToken ?? stored.refreshToken,
-      screenName: stored.screenName ?? undefined,
-    });
-    return {
-      accessToken: refreshed.accessToken,
-      refreshToken: refreshed.refreshToken ?? stored.refreshToken,
-      clientId: oauth2.clientId,
-      clientSecret: oauth2.clientSecret,
-    };
+  if (stored.refreshToken) {
+    const refreshed = await refreshWithSingleUseToken(stored.refreshToken);
+    if (refreshed) {
+      return refreshed;
+    }
   }
   const app = appXKeys();
   if (!app || !stored.accessSecret) {

@@ -169,6 +169,13 @@ describe("same functions as the unit tests", () => {
     expect(classList).toContain("file-protocol");
   });
 
+  test("the grid page derives its size from board constants instead of hardcoding pixels", async () => {
+    const page = await read("app/page.tsx");
+    expect(page).toContain("CANVAS_WIDTH");
+    expect(page).not.toContain('width={3200}');
+    expect(page).not.toContain('data-canvas-size="3200"');
+  });
+
   test("daily X cron is authorized and posts a square board image", async () => {
     const cron = await read("app/api/cron/daily/route.ts");
     const vercel = await read("vercel.json");

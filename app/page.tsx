@@ -1,4 +1,5 @@
 import { BoardScript } from "./board-script";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../src/lib/board";
 import { emptySnapshot, loadSnapshot } from "../src/lib/grid-db";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +21,10 @@ export default async function Page() {
         <div id="viewport">
           <div
             id="grid-surface"
-            data-canvas-size="3200"
-            style={{ width: 3200, height: 3200 }}
+            data-canvas-size={CANVAS_WIDTH}
+            style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
           >
-            <canvas id="board" width={3200} height={3200} />
+            <canvas id="board" width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
           </div>
         </div>
       </main>

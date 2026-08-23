@@ -32,6 +32,7 @@ import {
 import { isVisitorId, rankHolders, type Holder } from "./lib/hud";
 import { resolveLogoFromHtml } from "./lib/logo";
 import { placeholderDataUrl } from "./lib/placeholder";
+import { randomUuid } from "./lib/uuid";
 
 window.addEventListener("pageshow", (event) => {
   if (event.persisted) {
@@ -318,11 +319,11 @@ function visitorId(): string {
     if (existing && isVisitorId(existing)) {
       return existing;
     }
-    const id = crypto.randomUUID();
+    const id = randomUuid();
     window.localStorage.setItem(VISITOR_KEY, id);
     return id;
   } catch {
-    return crypto.randomUUID();
+    return randomUuid();
   }
 }
 
@@ -480,9 +481,10 @@ function ensureImage(src: string, fallbackUrl: string): HTMLImageElement {
 
 function paint() {
   const { cellSize, cols, rows } = grid;
-  const size = cols * cellSize;
+  const width = cols * cellSize;
+  const height = rows * cellSize;
   ctx.fillStyle = VACANT;
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, width, height);
 
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 1;
@@ -490,9 +492,9 @@ function paint() {
   for (let i = 0; i <= cols; i++) {
     const p = i * cellSize + 0.5;
     ctx.moveTo(p, 0);
-    ctx.lineTo(p, size);
+    ctx.lineTo(p, height);
     ctx.moveTo(0, p);
-    ctx.lineTo(size, p);
+    ctx.lineTo(width, p);
   }
   ctx.stroke();
   ctx.strokeStyle = LINE_STRONG;
@@ -500,9 +502,9 @@ function paint() {
   for (let i = 0; i <= cols; i += 10) {
     const p = i * cellSize + 0.5;
     ctx.moveTo(p, 0);
-    ctx.lineTo(p, size);
+    ctx.lineTo(p, height);
     ctx.moveTo(0, p);
-    ctx.lineTo(size, p);
+    ctx.lineTo(width, p);
   }
   ctx.stroke();
 

@@ -9,8 +9,37 @@ import {
   type PresenceRow,
 } from "./hud";
 import { supabaseAdmin } from "./supabase";
+import { createTtlCache, type TtlCache } from "./ttl-cache";
 
-const g = globalThis as { __pixelrestPresence?: Map<string, PresenceRow> };
+const g = globalThis as {
+  __pixelrestPresence?: Map<string, PresenceRow>;
+  __pixelrestHoldersCache?: TtlCache<Holder[]>;
+};
+
+const HOLDERS_TTL_MS = 10_000;
+
+function holdersCache(): TtlCache<Holder[]> {
+  if (!g.__pixelrestHoldersCache) {
+    g.__pixelrestHoldersCache = createTtlCache({
+      ttlMs: HOLDERS_TTL_MS,
+      load: async () => {
+        const claims = await listClaims();
+        return rankHolders(
+          claims.map((claim) => ({
+            url: claim.url,
+            logoUrl: claim.logoUrl,
+            squares: Math.max(1, claim.width * claim.height),
+            x: claim.x,
+            y: claim.y,
+            width: claim.width,
+            height: claim.height,
+          })),
+        );
+      },
+    });
+  }
+  return g.__pixelrestHoldersCache;
+}
 
 function memory(): Map<string, PresenceRow> {
   if (!g.__pixelrestPresence) {
@@ -99,18 +128,7 @@ export async function readPresenceCounts(
 
 export async function loadHolders(): Promise<Holder[]> {
   try {
-    const claims = await listClaims();
-    return rankHolders(
-      claims.map((claim) => ({
-        url: claim.url,
-        logoUrl: claim.logoUrl,
-        squares: Math.max(1, claim.width * claim.height),
-        x: claim.x,
-        y: claim.y,
-        width: claim.width,
-        height: claim.height,
-      })),
-    );
+    return await holdersCache().get();
   } catch {
     return [];
   }
